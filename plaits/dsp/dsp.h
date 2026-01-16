@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -32,8 +32,8 @@
 #include "stmlib/stmlib.h"
 
 namespace plaits {
-  
-static const float kSampleRate = 48000.0f;
+
+static const float kSampleRate = SAMPLE_RATE;
 
 // There is no proper PLL for I2S, only a divider on the system clock to derive
 // the bit clock.
@@ -44,12 +44,12 @@ static const float kSampleRate = 48000.0f;
 //
 // That's only 4.6 cts of error, but we care!
 
-static const float kCorrectedSampleRate = 47872.34f;
+static const float kCorrectedSampleRate = SAMPLE_RATE;
 const float a0 = (440.0f / 8.0f) / kCorrectedSampleRate;
 
 const size_t kMaxBlockSize = 24;
 const size_t kBlockSize = 12;
 
-}  // namespace plaits
+} // namespace plaits
 
-#endif  // PLAITS_DSP_DSP_H_
+#endif // PLAITS_DSP_DSP_H_
