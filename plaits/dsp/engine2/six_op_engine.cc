@@ -103,44 +103,27 @@ void SixOpEngine::Render(const EngineParameters &parameters, float *out,
   int patch_index =
       patch_index_quantizer_.Process(parameters.harmonics * 1.02f);
 
-  if (parameters.trigger & TRIGGER_UNPATCHED) {
-    const float t = parameters.morph;
-    voice_[0].mutable_lfo()->Scrub(2.0f * kCorrectedSampleRate * t);
+  if (parameters.trigger & TRIGGER_RISING_EDGE) {
+    active_voice_ = (active_voice_ + 1) % kNumSixOpVoices;
+    voice_[active_voice_].LoadPatch(&patches_[patch_index]);
+    voice_[active_voice_].mutable_lfo()->Reset();
+  }
+  Voice<6>::Parameters *p = voice_[active_voice_].mutable_parameters();
+  p->note = parameters.note;
+  p->velocity = parameters.accent;
+  p->envelope_control = parameters.morph;
+  voice_[active_voice_].mutable_lfo()->Step(float(size));
 
-    for (int i = 0; i < kNumSixOpVoices; ++i) {
-      voice_[i].LoadPatch(&patches_[patch_index]);
-      Voice<6>::Parameters *p = voice_[i].mutable_parameters();
-      p->sustain = i == 0 ? true : false;
-      p->gate = false;
-      p->note = parameters.note;
-      p->velocity = parameters.accent;
-      p->brightness = parameters.timbre;
-      p->envelope_control = t;
-      voice_[i].set_modulations(voice_[0].lfo());
-    }
-  } else {
-    if (parameters.trigger & TRIGGER_RISING_EDGE) {
-      active_voice_ = (active_voice_ + 1) % kNumSixOpVoices;
-      voice_[active_voice_].LoadPatch(&patches_[patch_index]);
-      voice_[active_voice_].mutable_lfo()->Reset();
-    }
-    Voice<6>::Parameters *p = voice_[active_voice_].mutable_parameters();
-    p->note = parameters.note;
-    p->velocity = parameters.accent;
-    p->envelope_control = parameters.morph;
-    voice_[active_voice_].mutable_lfo()->Step(float(size));
-
-    for (int i = 0; i < kNumSixOpVoices; ++i) {
-      Voice<6>::Parameters *p = voice_[i].mutable_parameters();
-      p->brightness = parameters.timbre;
-      p->sustain = false;
-      p->gate = (parameters.trigger & TRIGGER_HIGH) && (i == active_voice_);
-      if (voice_[i].patch() != voice_[active_voice_].patch()) {
-        voice_[i].mutable_lfo()->Step(float(size));
-        voice_[i].set_modulations(voice_[i].lfo());
-      } else {
-        voice_[i].set_modulations(voice_[active_voice_].lfo());
-      }
+  for (int i = 0; i < kNumSixOpVoices; ++i) {
+    Voice<6>::Parameters *p = voice_[i].mutable_parameters();
+    p->brightness = parameters.timbre;
+    p->sustain = false;
+    p->gate = (parameters.trigger & TRIGGER_HIGH) && (i == active_voice_);
+    if (voice_[i].patch() != voice_[active_voice_].patch()) {
+      voice_[i].mutable_lfo()->Step(float(size));
+      voice_[i].set_modulations(voice_[i].lfo());
+    } else {
+      voice_[i].set_modulations(voice_[active_voice_].lfo());
     }
   }
 
