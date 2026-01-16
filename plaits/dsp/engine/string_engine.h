@@ -48,9 +48,7 @@ public:
 private:
   StringVoice voice_;
 
-  float f0_;
   DelayLine<float, 16> f0_delay_;
-  int active_string_;
   float *temp_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(StringEngine);
