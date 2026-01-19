@@ -41,10 +41,9 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void PhaseDistortionEngine::Init(BufferAllocator *allocator) {
+void PhaseDistortionEngine::Init(BufferAllocator *) {
   modulator_.Init();
   shaper_.Init();
-  temp_buffer_ = allocator->Allocate<float>(kMaxBlockSize * 4);
 }
 
 void PhaseDistortionEngine::Reset() {}
