@@ -32,6 +32,7 @@
 
 #include "plaits/dsp/engine/engine.h"
 #include "plaits/dsp/oscillator/variable_shape_oscillator.h"
+#include <array>
 
 namespace plaits {
 
@@ -49,7 +50,7 @@ public:
 private:
   VariableShapeOscillator shaper_;
   VariableShapeOscillator modulator_;
-  float *temp_buffer_;
+  std::array<float, kMaxBlockSize * 4> temp_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(PhaseDistortionEngine);
 };
