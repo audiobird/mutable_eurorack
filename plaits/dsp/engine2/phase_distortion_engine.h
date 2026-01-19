@@ -36,18 +36,19 @@
 
 namespace plaits {
 
-class PhaseDistortionEngine : public Engine {
+class PhaseDistortionEngine {
 public:
   PhaseDistortionEngine() {}
   ~PhaseDistortionEngine() {}
 
-  virtual void Init(stmlib::BufferAllocator *allocator);
-  virtual void Reset();
-  virtual void LoadUserData(const uint8_t *user_data) {}
-  virtual void Render(const EngineParameters &parameters, float *out,
-                      float *aux, size_t size, bool *already_enveloped);
+  void Init();
+  void Reset();
+  void LoadUserData(const uint8_t *user_data) {}
+  void RenderOut(const EngineParameters &parameters, float *out, size_t size);
+  void RenderAux(const EngineParameters &parameters, float *aux, size_t size);
 
 private:
+  void RenderBase(const EngineParameters &parameters, size_t size);
   VariableShapeOscillator shaper_;
   VariableShapeOscillator modulator_;
   std::array<float, kMaxBlockSize * 4> temp_buffer_;

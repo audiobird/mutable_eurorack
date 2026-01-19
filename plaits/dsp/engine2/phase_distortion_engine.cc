@@ -41,16 +41,15 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void PhaseDistortionEngine::Init(BufferAllocator *) {
+void PhaseDistortionEngine::Init() {
   modulator_.Init();
   shaper_.Init();
 }
 
 void PhaseDistortionEngine::Reset() {}
 
-void PhaseDistortionEngine::Render(const EngineParameters &parameters,
-                                   float *out, float *aux, size_t size,
-                                   bool *already_enveloped) {
+void PhaseDistortionEngine::RenderBase(const EngineParameters &parameters,
+                                       size_t size) {
   const float f0 = 0.5f * NoteToFrequency(parameters.note);
   const float modulator_f = min(
       0.25f, f0 * SemitonesToRatio(Interpolate(lut_fm_frequency_quantizer,
@@ -66,14 +65,27 @@ void PhaseDistortionEngine::Render(const EngineParameters &parameters,
                              2 * size);
   modulator_.Render<false, true>(f0, modulator_f, pw, 0.0f, amount,
                                  free_running, 2 * size);
+}
 
+void PhaseDistortionEngine::RenderOut(const EngineParameters &parameters,
+                                      float *out, size_t size) {
+  RenderBase(parameters, size);
+  float *synced = &temp_buffer_[0];
   for (size_t i = 0; i < size; ++i) {
     // Naive 0.5x downsampling.
     out[i] = 0.5f * Sine(*synced++ + 0.25f);
     out[i] += 0.5f * Sine(*synced++ + 0.25f);
+  }
+}
 
-    aux[i] = 0.5f * Sine(*free_running++ + 0.25f);
-    aux[i] += 0.5f * Sine(*free_running++ + 0.25f);
+void PhaseDistortionEngine::RenderAux(const EngineParameters &parameters,
+                                      float *out, size_t size) {
+  RenderBase(parameters, size);
+  float *free_running = &temp_buffer_[2 * size];
+  for (size_t i = 0; i < size; ++i) {
+    // Naive 0.5x downsampling.
+    out[i] = 0.5f * Sine(*free_running++ + 0.25f);
+    out[i] += 0.5f * Sine(*free_running++ + 0.25f);
   }
 }
 
