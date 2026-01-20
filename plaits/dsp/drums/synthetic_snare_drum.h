@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -35,7 +35,7 @@
 
 #include <algorithm>
 
-#include "stmlib/dsp/dsp.h"
+#include "core/random.hh"
 #include "stmlib/dsp/parameter_interpolator.h"
 #include "stmlib/dsp/units.h"
 
@@ -44,9 +44,9 @@
 namespace plaits {
 
 class SyntheticSnareDrum {
- public:
-  SyntheticSnareDrum() { }
-  ~SyntheticSnareDrum() { }
+public:
+  SyntheticSnareDrum() {}
+  ~SyntheticSnareDrum() {}
 
   void Init() {
     phase_[0] = 0.0f;
@@ -61,56 +61,49 @@ class SyntheticSnareDrum {
     snare_hp_.Init();
     snare_lp_.Init();
   }
-  
+
   inline float DistortedSine(float phase) {
     float triangle = (phase < 0.5f ? phase : 1.0f - phase) * 4.0f - 1.3f;
-    return 2.0f * triangle / (1.0f + fabsf(triangle));
+    return 2.0f * triangle / (1.0f + std::fabsf(triangle));
   }
-  
-  void Render(
-      bool sustain,
-      bool trigger,
-      float accent,
-      float f0,
-      float fm_amount,
-      float decay,
-      float snappy,
-      float* out,
-      size_t size) {
+
+  void Render(bool sustain, bool trigger, float accent, float f0,
+              float fm_amount, float decay, float snappy, float *out,
+              size_t size) {
     const float decay_xt = decay * (1.0f + decay * (decay - 1.0f));
     fm_amount *= fm_amount;
-    const float drum_decay = 1.0f - 1.0f / (0.015f * kSampleRate) * \
-        stmlib::SemitonesToRatio(
-           -decay_xt * 72.0f - fm_amount * 12.0f + snappy * 7.0f);
-    const float snare_decay = 1.0f - 1.0f / (0.01f * kSampleRate) * \
-        stmlib::SemitonesToRatio(-decay * 60.0f - snappy * 7.0f);
+    const float drum_decay =
+        1.0f - 1.0f / (0.015f * kSampleRate) *
+                   stmlib::SemitonesToRatio(-decay_xt * 72.0f -
+                                            fm_amount * 12.0f + snappy * 7.0f);
+    const float snare_decay =
+        1.0f - 1.0f / (0.01f * kSampleRate) *
+                   stmlib::SemitonesToRatio(-decay * 60.0f - snappy * 7.0f);
     const float fm_decay = 1.0f - 1.0f / (0.007f * kSampleRate);
-    
+
     snappy = snappy * 1.1f - 0.05f;
     CONSTRAIN(snappy, 0.0f, 1.0f);
-    
-    const float drum_level = stmlib::Sqrt(1.0f - snappy);
-    const float snare_level = stmlib::Sqrt(snappy);
-    
+
+    const float drum_level = std::sqrt(1.0f - snappy);
+    const float snare_level = std::sqrt(snappy);
+
     const float snare_f_min = std::min(10.0f * f0, 0.5f);
     const float snare_f_max = std::min(35.0f * f0, 0.5f);
 
     snare_hp_.set_f<stmlib::FREQUENCY_FAST>(snare_f_min);
     snare_lp_.set_f_q<stmlib::FREQUENCY_FAST>(snare_f_max,
-        0.5f + 2.0f * snappy);
+                                              0.5f + 2.0f * snappy);
     drum_lp_.set_f<stmlib::FREQUENCY_FAST>(3.0f * f0);
-    
+
     if (trigger) {
       snare_amplitude_ = drum_amplitude_ = 0.3f + 0.7f * accent;
       fm_ = 1.0f;
       phase_[0] = phase_[1] = 0.0f;
       hold_counter_ = static_cast<int>((0.04f + decay * 0.03f) * kSampleRate);
     }
-    
-    stmlib::ParameterInterpolator sustain_gain(
-        &sustain_gain_,
-        accent * decay,
-        size);
+
+    stmlib::ParameterInterpolator sustain_gain(&sustain_gain_, accent * decay,
+                                               size);
     while (size--) {
       if (sustain) {
         snare_amplitude_ = sustain_gain.Next();
@@ -121,9 +114,8 @@ class SyntheticSnareDrum {
         // The envelope for the drum has a very long tail.
         // The envelope for the snare has a "hold" stage which lasts between
         // 40 and 70 ms
-        drum_amplitude_ *= (drum_amplitude_ > 0.03f || !(size & 1))
-            ? drum_decay
-            : 1.0f;
+        drum_amplitude_ *=
+            (drum_amplitude_ > 0.03f || !(size & 1)) ? drum_decay : 1.0f;
         if (hold_counter_) {
           --hold_counter_;
         } else {
@@ -162,37 +154,37 @@ class SyntheticSnareDrum {
           phase_[1] -= 1.0f;
         }
       }
-      
+
       float drum = -0.1f;
       drum += DistortedSine(phase_[0]) * 0.60f;
       drum += DistortedSine(phase_[1]) * 0.25f;
       drum *= drum_amplitude_ * drum_level;
       drum = drum_lp_.Process<stmlib::FILTER_MODE_LOW_PASS>(drum);
-      
-      float noise = stmlib::Random::GetFloat();
+
+      auto noise = Random::get_float_uni();
       float snare = snare_lp_.Process<stmlib::FILTER_MODE_LOW_PASS>(noise);
       snare = snare_hp_.Process<stmlib::FILTER_MODE_HIGH_PASS>(snare);
       snare = (snare + 0.1f) * (snare_amplitude_ + fm_) * snare_level;
-      
-      *out++ = snare + drum;  // It's a snare, it's a drum, it's a snare drum.
+
+      *out++ = snare + drum; // It's a snare, it's a drum, it's a snare drum.
     }
   }
 
- private:
+private:
   float phase_[2];
   float drum_amplitude_;
   float snare_amplitude_;
   float fm_;
   float sustain_gain_;
   int hold_counter_;
-  
+
   stmlib::OnePole drum_lp_;
   stmlib::OnePole snare_hp_;
   stmlib::Svf snare_lp_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(SyntheticSnareDrum);
 };
-  
-}  // namespace plaits
 
-#endif  // PLAITS_DSP_DRUMS_SYNTHETIC_SNARE_DRUM_H_
+} // namespace plaits
+
+#endif // PLAITS_DSP_DRUMS_SYNTHETIC_SNARE_DRUM_H_

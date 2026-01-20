@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -29,13 +29,13 @@
 #ifndef PLAITS_DSP_NOISE_DUST_H_
 #define PLAITS_DSP_NOISE_DUST_H_
 
-#include "stmlib/utils/random.h"
+#include "core/random.hh"
 
 namespace plaits {
 
 inline float Dust(float frequency) {
   float inv_frequency = 1.0f / frequency;
-  float u = stmlib::Random::GetFloat();
+  float u = Random::get_float_uni();
   if (u < frequency) {
     return u * inv_frequency;
   } else {
@@ -43,6 +43,6 @@ inline float Dust(float frequency) {
   }
 }
 
-}  // namespace plaits
+} // namespace plaits
 
-#endif  // PLAITS_DSP_NOISE_DUST_H_
+#endif // PLAITS_DSP_NOISE_DUST_H_

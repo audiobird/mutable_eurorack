@@ -35,10 +35,9 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void GrainEngine::Init(BufferAllocator *allocator) {
+void GrainEngine::Init() {
   grainlet_[0].Init();
   grainlet_[1].Init();
-  // vosim_oscillator_.Init();
   z_oscillator_.Init();
   dc_blocker_[0].Init();
   dc_blocker_[1].Init();
@@ -47,7 +46,7 @@ void GrainEngine::Init(BufferAllocator *allocator) {
 void GrainEngine::Reset() {}
 
 void GrainEngine::Render(const EngineParameters &parameters, float *out,
-                         float *aux, size_t size, bool *already_enveloped) {
+                         float *aux, size_t size) {
   const float root = parameters.note;
   const float f0 = NoteToFrequency(root);
 

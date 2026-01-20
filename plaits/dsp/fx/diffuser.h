@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -32,32 +32,33 @@
 #include "stmlib/stmlib.h"
 
 #include "plaits/dsp/fx/fx_engine.h"
+#include <array>
 
 namespace plaits {
 
 class Diffuser {
- public:
-  Diffuser() { }
-  ~Diffuser() { }
-  
-  void Init(uint16_t* buffer) {
-    engine_.Init(buffer);
+public:
+  Diffuser() {}
+  ~Diffuser() {}
+
+  void Init() {
+    engine_.Init(buf.data());
     engine_.SetLFOFrequency(LFO_1, 0.3f / 48000.0f);
     lp_decay_ = 0.0f;
   }
-  
-  void Reset() {
-    engine_.Clear();
-  }
-  
-  void Process(float amount, float rt, float* in_out, size_t size) {
-    typedef E::Reserve<126,
-      E::Reserve<180,
-      E::Reserve<269,
-      E::Reserve<444,
-      E::Reserve<1653,
-      E::Reserve<2010,
-      E::Reserve<3411> > > > > > > Memory;
+
+  void Reset() { engine_.Clear(); }
+
+  void Process(float amount, float rt, float *in_out, size_t size) {
+    typedef E::Reserve<
+        126,
+        E::Reserve<
+            180,
+            E::Reserve<
+                269, E::Reserve<
+                         444, E::Reserve<1653,
+                                         E::Reserve<2010, E::Reserve<3411>>>>>>>
+        Memory;
     E::DelayLine<Memory, 0> ap1;
     E::DelayLine<Memory, 1> ap2;
     E::DelayLine<Memory, 2> ap3;
@@ -94,15 +95,16 @@ class Diffuser {
     }
     lp_decay_ = lp;
   }
-  
- private:
+
+private:
   typedef FxEngine<8192, FORMAT_12_BIT> E;
+  std::array<uint16_t, 8192> buf;
   E engine_;
   float lp_decay_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(Diffuser);
 };
 
-}  // namespace plaits
+} // namespace plaits
 
-#endif  // PLAITS_DSP_FX_DIFFUSER_H_
+#endif // PLAITS_DSP_FX_DIFFUSER_H_

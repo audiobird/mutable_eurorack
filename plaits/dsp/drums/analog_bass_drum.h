@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -31,7 +31,6 @@
 
 #include <algorithm>
 
-#include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/filter.h"
 #include "stmlib/dsp/parameter_interpolator.h"
 #include "stmlib/dsp/units.h"
@@ -42,9 +41,9 @@
 namespace plaits {
 
 class AnalogBassDrum {
- public:
-  AnalogBassDrum() { }
-  ~AnalogBassDrum() { }
+public:
+  AnalogBassDrum() {}
+  ~AnalogBassDrum() {}
 
   void Init() {
     pulse_remaining_samples_ = 0;
@@ -61,7 +60,7 @@ class AnalogBassDrum {
     resonator_.Init();
     oscillator_.Init();
   }
-  
+
   inline float Diode(float x) {
     if (x >= 0.0f) {
       return x;
@@ -70,31 +69,21 @@ class AnalogBassDrum {
       return 0.7f * x / (1.0f + fabsf(x));
     }
   }
-  
-  void Render(
-      bool sustain,
-      bool trigger,
-      float accent,
-      float f0,
-      float tone,
-      float decay,
-      float attack_fm_amount,
-      float self_fm_amount,
-      float* out,
-      size_t size) {
+
+  void Render(bool sustain, bool trigger, float accent, float f0, float tone,
+              float decay, float attack_fm_amount, float self_fm_amount,
+              float *out, size_t size) {
     const int kTriggerPulseDuration = 1.0e-3f * kSampleRate;
     const int kFMPulseDuration = 6.0e-3f * kSampleRate;
     const float kPulseDecayTime = 0.2e-3f * kSampleRate;
     const float kPulseFilterTime = 0.1e-3f * kSampleRate;
     const float kRetrigPulseDuration = 0.05f * kSampleRate;
-    
+
     const float scale = 0.001f / f0;
     const float q = 1500.0f * stmlib::SemitonesToRatio(decay * 80.0f);
-    const float tone_f = std::min(
-        4.0f * f0 * stmlib::SemitonesToRatio(tone * 108.0f),
-        1.0f);
+    const float tone_f =
+        std::min(4.0f * f0 * stmlib::SemitonesToRatio(tone * 108.0f), 1.0f);
     const float exciter_leak = 0.08f * (tone + 0.25f);
-      
 
     if (trigger) {
       pulse_remaining_samples_ = kTriggerPulseDuration;
@@ -102,12 +91,10 @@ class AnalogBassDrum {
       pulse_height_ = 3.0f + 7.0f * accent;
       lp_out_ = 0.0f;
     }
-    
-    stmlib::ParameterInterpolator sustain_gain(
-        &sustain_gain_,
-        accent * decay,
-        size);
-    
+
+    stmlib::ParameterInterpolator sustain_gain(&sustain_gain_, accent * decay,
+                                               size);
+
     while (size--) {
       // Q39 / Q40
       float pulse = 0.0f;
@@ -122,7 +109,7 @@ class AnalogBassDrum {
       if (sustain) {
         pulse = 0.0f;
       }
-      
+
       // C40 / R163 / R162 / D83
       ONE_POLE(pulse_lp_, pulse, 1.0f / kPulseFilterTime);
       pulse = Diode((pulse - pulse_lp_) + pulse * 0.044f);
@@ -159,18 +146,16 @@ class AnalogBassDrum {
         resonator_.set_f_q<stmlib::FREQUENCY_DIRTY>(f, 1.0f + q * f);
         resonator_.Process<stmlib::FILTER_MODE_BAND_PASS,
                            stmlib::FILTER_MODE_LOW_PASS>(
-            (pulse - retrig_pulse_ * 0.2f) * scale,
-            &resonator_out,
-            &lp_out_);
+            (pulse - retrig_pulse_ * 0.2f) * scale, &resonator_out, &lp_out_);
       }
-      
+
       ONE_POLE(tone_lp_, pulse * exciter_leak + resonator_out, tone_f);
-      
+
       *out++ = tone_lp_;
     }
   }
 
- private:
+private:
   int pulse_remaining_samples_;
   int fm_pulse_remaining_samples_;
   float pulse_;
@@ -181,15 +166,15 @@ class AnalogBassDrum {
   float lp_out_;
   float tone_lp_;
   float sustain_gain_;
-  
+
   stmlib::Svf resonator_;
-  
+
   // Replace the resonator in "free running" (sustain) mode.
   SineOscillator oscillator_;
-  
+
   DISALLOW_COPY_AND_ASSIGN(AnalogBassDrum);
 };
-  
-}  // namespace plaits
 
-#endif  // PLAITS_DSP_DRUMS_ANALOG_BASS_DRUM_H_
+} // namespace plaits
+
+#endif // PLAITS_DSP_DRUMS_ANALOG_BASS_DRUM_H_

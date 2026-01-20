@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -32,15 +32,16 @@
 #include "plaits/dsp/speech/lpc_speech_synth.h"
 
 #include "stmlib/utils/buffer_allocator.h"
+#include <array>
 
 namespace plaits {
 
 class BitStream {
- public:
-  BitStream() { }
-  ~BitStream() { }
+public:
+  BitStream() {}
+  ~BitStream() {}
 
-  inline void Init(const uint8_t* p) {
+  inline void Init(const uint8_t *p) {
     p_ = p;
     available_ = 0;
     bits_ = 0;
@@ -67,17 +68,17 @@ class BitStream {
     return result;
   }
 
-  inline const uint8_t* ptr() const { return p_; }
+  inline const uint8_t *ptr() const { return p_; }
 
- private:
+private:
   inline uint8_t Reverse(uint8_t b) const {
     b = (b >> 4) | (b << 4);
-  	b = ((b & 0xcc) >> 2) | ((b & 0x33) << 2);
-  	b = ((b & 0xaa) >> 1) | ((b & 0x55) << 1);
+    b = ((b & 0xcc) >> 2) | ((b & 0x33) << 2);
+    b = ((b & 0xaa) >> 1) | ((b & 0x55) << 1);
     return b;
   }
 
-  const uint8_t* p_;
+  const uint8_t *p_;
   int available_;
   uint16_t bits_;
 
@@ -88,32 +89,29 @@ const int kLPCSpeechSynthMaxWords = 32;
 const int kLPCSpeechSynthMaxFrames = 1024;
 const int kLPCSpeechSynthNumVowels = 5;
 const int kLPCSpeechSynthNumConsonants = 10;
-const int kLPCSpeechSynthNumPhonemes = \
+const int kLPCSpeechSynthNumPhonemes =
     kLPCSpeechSynthNumVowels + kLPCSpeechSynthNumConsonants;
 const float kLPCSpeechSynthFPS = 40.0f;
 
 struct LPCSpeechSynthWordBankData {
-  const uint8_t* data;
+  const uint8_t *data;
   size_t size;
 };
 
 class LPCSpeechSynthWordBank {
- public:
-  LPCSpeechSynthWordBank() { }
-  ~LPCSpeechSynthWordBank() { }
+public:
+  LPCSpeechSynthWordBank() {}
+  ~LPCSpeechSynthWordBank() {}
 
-  void Init(
-      const LPCSpeechSynthWordBankData* word_banks,
-      int num_banks,
-      stmlib::BufferAllocator* allocator);
-  
+  void Init(const LPCSpeechSynthWordBankData *word_banks, int num_banks);
+
   bool Load(int index);
   void Reset();
-  
+
   inline int num_frames() const { return num_frames_; }
-  inline const LPCSpeechSynth::Frame* frames() const { return frames_; }
-  
-  inline void GetWordBoundaries(float address, int* start, int* end) {
+  inline const LPCSpeechSynth::Frame *frames() const { return frames_.data(); }
+
+  inline void GetWordBoundaries(float address, int *start, int *end) {
     if (num_words_ == 0) {
       *start = *end = -1;
     } else {
@@ -125,20 +123,20 @@ class LPCSpeechSynthWordBank {
       *end = word_boundaries_[word + 1] - 1;
     }
   }
-  
- private:
-  size_t LoadNextWord(const uint8_t* data);
-  
-  const LPCSpeechSynthWordBankData* word_banks_;
-  
+
+private:
+  size_t LoadNextWord(const uint8_t *data);
+
+  const LPCSpeechSynthWordBankData *word_banks_;
+
   int num_banks_;
   int loaded_bank_;
   int num_frames_;
   int num_words_;
 
-  int* word_boundaries_;
-  LPCSpeechSynth::Frame* frames_;
-  
+  std::array<int, kLPCSpeechSynthMaxWords> word_boundaries_;
+  std::array<LPCSpeechSynth::Frame, kLPCSpeechSynthMaxFrames> frames_;
+
   static const uint8_t energy_lut_[16];
   static const uint8_t period_lut_[64];
   static const int16_t k0_lut_[32];
@@ -154,27 +152,18 @@ class LPCSpeechSynthWordBank {
 };
 
 class LPCSpeechSynthController {
- public:
-  LPCSpeechSynthController() { }
-  ~LPCSpeechSynthController() { }
-  
-  void Init(LPCSpeechSynthWordBank* word_bank);
-  
-  void Render(
-      bool free_running,
-      bool trigger,
-      int bank,
-      float frequency,
-      float prosody_amount,
-      float speed,
-      float address,
-      float formant_shift,
-      float gain,
-      float* excitation,
-      float* output,
-      size_t size);
-  
- private:
+public:
+  LPCSpeechSynthController() {}
+  ~LPCSpeechSynthController() {}
+
+  void Init(LPCSpeechSynthWordBank *word_bank);
+
+  void Render(bool free_running, bool trigger, int bank, float frequency,
+              float prosody_amount, float speed, float address,
+              float formant_shift, float gain, float *excitation, float *output,
+              size_t size);
+
+private:
   float clock_phase_;
   float sample_[2];
   float next_sample_[2];
@@ -185,13 +174,13 @@ class LPCSpeechSynthController {
   int last_playback_frame_;
   size_t remaining_frame_samples_;
 
-  LPCSpeechSynthWordBank* word_bank_;
-  
+  LPCSpeechSynthWordBank *word_bank_;
+
   static const LPCSpeechSynth::Frame phonemes_[kLPCSpeechSynthNumPhonemes];
-  
+
   DISALLOW_COPY_AND_ASSIGN(LPCSpeechSynthController);
 };
 
-};  // namespace plaits
+}; // namespace plaits
 
-#endif  // PLAITS_DSP_SPEECH_LPC_SPEECH_SYNTH_CONTROLLER_H_
+#endif // PLAITS_DSP_SPEECH_LPC_SPEECH_SYNTH_CONTROLLER_H_

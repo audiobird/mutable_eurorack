@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -31,6 +31,7 @@
 #ifndef PLAITS_DSP_OSCILLATOR_SUPERSQUARE_OSCILLATOR_H_
 #define PLAITS_DSP_OSCILLATOR_SUPERSQUARE_OSCILLATOR_H_
 
+#include "plaits/dsp/oscillator/oscillator.h"
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/parameter_interpolator.h"
 #include "stmlib/dsp/polyblep.h"
@@ -40,44 +41,39 @@
 namespace plaits {
 
 class SuperSquareOscillator {
- public:
-  SuperSquareOscillator() { }
-  ~SuperSquareOscillator() { }
+public:
+  SuperSquareOscillator() {}
+  ~SuperSquareOscillator() {}
 
   void Init() {
     master_phase_ = 0.0f;
     slave_phase_ = 0.0f;
     next_sample_ = 0.0f;
     high_ = false;
-  
+
     master_frequency_ = 0.0f;
     slave_frequency_ = 0.01f;
   }
-  
-  void Render(
-      float frequency,
-      float shape,
-      float* out,
-      size_t size) {
+
+  void Render(float frequency, float shape, float *out, size_t size) {
     float master_frequency = frequency;
-    frequency *= shape < 0.5f
-        ? (0.51f + 0.98f * shape)
-        : 1.0f + 16.0f * (shape - 0.5f) * (shape - 0.5f);
+    frequency *= shape < 0.5f ? (0.51f + 0.98f * shape)
+                              : 1.0f + 16.0f * (shape - 0.5f) * (shape - 0.5f);
 
     if (master_frequency >= kMaxFrequency) {
       master_frequency = kMaxFrequency;
     }
-    
+
     if (frequency >= kMaxFrequency) {
       frequency = kMaxFrequency;
     }
-    
-    stmlib::ParameterInterpolator master_fm(
-        &master_frequency_, master_frequency, size);
+
+    stmlib::ParameterInterpolator master_fm(&master_frequency_,
+                                            master_frequency, size);
     stmlib::ParameterInterpolator fm(&slave_frequency_, frequency, size);
 
     float next_sample = next_sample_;
-    
+
     while (size--) {
       bool reset = false;
       bool transition_during_reset = false;
@@ -85,7 +81,7 @@ class SuperSquareOscillator {
 
       float this_sample = next_sample;
       next_sample = 0.0f;
-    
+
       const float master_frequency = master_fm.Next();
       const float slave_frequency = fm.Next();
 
@@ -93,9 +89,9 @@ class SuperSquareOscillator {
       if (master_phase_ >= 1.0f) {
         master_phase_ -= 1.0f;
         reset_time = master_phase_ / master_frequency;
-      
-        float slave_phase_at_reset = slave_phase_ + \
-            (1.0f - reset_time) * slave_frequency;
+
+        float slave_phase_at_reset =
+            slave_phase_ + (1.0f - reset_time) * slave_frequency;
         reset = true;
         if (slave_phase_at_reset >= 1.0f) {
           slave_phase_at_reset -= 1.0f;
@@ -108,7 +104,7 @@ class SuperSquareOscillator {
         this_sample -= value * stmlib::ThisBlepSample(reset_time);
         next_sample -= value * stmlib::NextBlepSample(reset_time);
       }
-      
+
       slave_phase_ += slave_frequency;
       while (transition_during_reset || !reset) {
         if (!high_) {
@@ -120,7 +116,7 @@ class SuperSquareOscillator {
           next_sample += stmlib::NextBlepSample(t);
           high_ = true;
         }
-      
+
         if (high_) {
           if (slave_phase_ < 1.0f) {
             break;
@@ -132,20 +128,20 @@ class SuperSquareOscillator {
           high_ = false;
         }
       }
-    
+
       if (reset) {
         slave_phase_ = reset_time * slave_frequency;
         high_ = false;
       }
-    
+
       next_sample += slave_phase_ < 0.5f ? 0.0f : 1.0f;
       *out++ = 2.0f * this_sample - 1.0f;
     }
-    
+
     next_sample_ = next_sample;
   }
 
- private:
+private:
   // Oscillator state.
   float master_phase_;
   float slave_phase_;
@@ -158,7 +154,7 @@ class SuperSquareOscillator {
 
   DISALLOW_COPY_AND_ASSIGN(SuperSquareOscillator);
 };
-  
-}  // namespace plaits
 
-#endif  // PLAITS_DSP_OSCILLATOR_SUPERSQUARE_OSCILLATOR_H_
+} // namespace plaits
+
+#endif // PLAITS_DSP_OSCILLATOR_SUPERSQUARE_OSCILLATOR_H_

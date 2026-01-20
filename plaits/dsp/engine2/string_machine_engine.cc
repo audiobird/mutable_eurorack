@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -37,16 +37,16 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void StringMachineEngine::Init(BufferAllocator* allocator) {
+void StringMachineEngine::Init() {
   for (int i = 0; i < kChordNumNotes; ++i) {
     divide_down_voice_[i].Init();
   }
-  chords_.Init(allocator);
+  chords_.Init();
   morph_lp_ = 0.0f;
   timbre_lp_ = 0.0f;
   svf_[0].Init();
   svf_[1].Init();
-  ensemble_.Init(allocator->Allocate<Ensemble::E::T>(1024));
+  ensemble_.Init();
 }
 
 void StringMachineEngine::Reset() {
@@ -56,25 +56,24 @@ void StringMachineEngine::Reset() {
 
 const int kRegistrationTableSize = 11;
 const float registrations[kRegistrationTableSize][kChordNumHarmonics * 2] = {
-  { 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },    // Saw
-  { 0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f },    // Saw + saw
-  { 0.4f, 0.0f, 0.2f, 0.0f, 0.4f, 0.0f },    // Full saw
-  { 0.3f, 0.0f, 0.0f, 0.3f, 0.0f, 0.4f },    // Full saw + square hybrid
-  { 0.3f, 0.0f, 0.0f, 0.0f, 0.0f, 0.7f },    // Saw + high square harmo
-  { 0.2f, 0.0f, 0.0f, 0.2f, 0.0f, 0.6f },    // Weird hybrid
-  { 0.0f, 0.2f, 0.1f, 0.0f, 0.2f, 0.5f },    // Sawsquare high harmo
-  { 0.0f, 0.3f, 0.0f, 0.3f, 0.0f, 0.4f },    // Square high armo
-  { 0.0f, 0.4f, 0.0f, 0.3f, 0.0f, 0.3f },    // Full square
-  { 0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f },    // Square + Square
-  { 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f },    // Square
+    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Saw
+    {0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f}, // Saw + saw
+    {0.4f, 0.0f, 0.2f, 0.0f, 0.4f, 0.0f}, // Full saw
+    {0.3f, 0.0f, 0.0f, 0.3f, 0.0f, 0.4f}, // Full saw + square hybrid
+    {0.3f, 0.0f, 0.0f, 0.0f, 0.0f, 0.7f}, // Saw + high square harmo
+    {0.2f, 0.0f, 0.0f, 0.2f, 0.0f, 0.6f}, // Weird hybrid
+    {0.0f, 0.2f, 0.1f, 0.0f, 0.2f, 0.5f}, // Sawsquare high harmo
+    {0.0f, 0.3f, 0.0f, 0.3f, 0.0f, 0.4f}, // Square high armo
+    {0.0f, 0.4f, 0.0f, 0.3f, 0.0f, 0.3f}, // Full square
+    {0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f}, // Square + Square
+    {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Square
 };
 
-void StringMachineEngine::ComputeRegistration(
-    float registration,
-    float* amplitudes) {
+void StringMachineEngine::ComputeRegistration(float registration,
+                                              float *amplitudes) {
   registration *= (kRegistrationTableSize - 1.001f);
   MAKE_INTEGRAL_FRACTIONAL(registration);
-  
+
   for (int i = 0; i < kChordNumHarmonics * 2; ++i) {
     float a = registrations[registration_integral][i];
     float b = registrations[registration_integral + 1][i];
@@ -82,12 +81,8 @@ void StringMachineEngine::ComputeRegistration(
   }
 }
 
-void StringMachineEngine::Render(
-    const EngineParameters& parameters,
-    float* out,
-    float* aux,
-    size_t size,
-    bool* already_enveloped) {
+void StringMachineEngine::Render(const EngineParameters &parameters, float *out,
+                                 float *aux, size_t size) {
   ONE_POLE(morph_lp_, parameters.morph, 0.1f);
   ONE_POLE(timbre_lp_, parameters.timbre, 0.1f);
 
@@ -106,14 +101,11 @@ void StringMachineEngine::Render(
     const float note_f0 = f0 * chords_.ratio(note);
     float divide_down_gain = 4.0f - note_f0 * 32.0f;
     CONSTRAIN(divide_down_gain, 0.0f, 1.0f);
-    divide_down_voice_[note].Render(
-        note_f0,
-        harmonics,
-        0.25f * divide_down_gain,
-        note & 1 ? aux : out,
-        size);
+    divide_down_voice_[note].Render(note_f0, harmonics,
+                                    0.25f * divide_down_gain,
+                                    note & 1 ? aux : out, size);
   }
-  
+
   // Pass through VCF.
   const float cutoff = 2.2f * f0 * SemitonesToRatio(120.0f * parameters.timbre);
   svf_[0].set_f_q<FREQUENCY_DIRTY>(cutoff, 1.0f);
@@ -135,4 +127,4 @@ void StringMachineEngine::Render(
   ensemble_.Process(out, aux, size);
 }
 
-}  // namespace plaits
+} // namespace plaits

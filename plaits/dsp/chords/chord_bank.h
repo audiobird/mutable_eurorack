@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -34,6 +34,7 @@
 #include "stmlib/utils/buffer_allocator.h"
 
 #include <algorithm>
+#include <array>
 
 namespace plaits {
 
@@ -42,23 +43,19 @@ const int kChordNumVoices = kChordNumNotes + 1;
 
 // #define JON_CHORDS
 
-#ifdef JON_CHORDS
 const int kChordNumChords = 17;
-#else
-const int kChordNumChords = 11;
-#endif  // JON_CHORDS
 
 class ChordBank {
- public:
-  ChordBank() { }
-  ~ChordBank() { }
-  
-  void Init(stmlib::BufferAllocator* allocator);
+public:
+  ChordBank() {}
+  ~ChordBank() {}
+
+  void Init();
   void Reset();
-  
-  int ComputeChordInversion(
-      float inversion, float* ratios, float* amplitudes);
-  
+
+  int ComputeChordInversion(float inversion, float *ratios, float *amplitudes);
+
+  // this is the kind of thing that should be done at compile time
   inline void Sort() {
     for (int i = 0; i < kChordNumNotes; ++i) {
       float r = ratio(i);
@@ -69,16 +66,12 @@ class ChordBank {
     }
     std::sort(&sorted_ratios_[0], &sorted_ratios_[kChordNumNotes]);
   }
-  
-  inline void set_chord(float parameter) {
-    chord_index_quantizer_.Process(parameter * 1.02f);
-  }
-  
-  inline int chord_index() const {
-    return chord_index_quantizer_.quantized_value();
-  }
-  
-  inline const float* ratios() const {
+
+  inline void set_chord(int idx) { chord_idx_ = idx; }
+
+  inline int chord_index() const { return chord_idx_; }
+
+  inline const float *ratios() const {
     return &ratios_[chord_index() * kChordNumNotes];
   }
 
@@ -86,26 +79,19 @@ class ChordBank {
     return ratios_[chord_index() * kChordNumNotes + note];
   }
 
-  inline float sorted_ratio(int note) const {
-    return sorted_ratios_[note];
-  }
-  
-  inline int num_notes() const {
-    return note_count_[chord_index()];
-  }
+  inline float sorted_ratio(int note) const { return sorted_ratios_[note]; }
 
- private:
-  stmlib::HysteresisQuantizer2 chord_index_quantizer_;
-  
-  float* ratios_;
-  float* sorted_ratios_;
-  int* note_count_;
-  
-  static const float chords_[kChordNumChords][kChordNumNotes];
-  
+  inline int num_notes() const { return note_count_[chord_index()]; }
+
+private:
+  int chord_idx_{};
+  std::array<float, kChordNumNotes * kChordNumChords> ratios_;
+  std::array<float, kChordNumNotes> sorted_ratios_;
+  std::array<int, kChordNumChords> note_count_;
+
   DISALLOW_COPY_AND_ASSIGN(ChordBank);
 };
 
-}  // namespace plaits
+} // namespace plaits
 
-#endif  // PLAITS_DSP_CHORDS_CHORD_BANK_H_
+#endif // PLAITS_DSP_CHORDS_CHORD_BANK_H_
