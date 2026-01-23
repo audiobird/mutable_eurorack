@@ -152,7 +152,7 @@ public:
       shell = stmlib::SoftClip(shell);
 
       // C56 / R194 / Q48 / C54 / R188 / D54
-      auto noise = Random::get_float();
+      auto noise = Random::get<float, Random::Bipolar>();
       if (noise < 0.0f)
         noise = 0.0f;
       noise_envelope_ *= noise_envelope_decay;

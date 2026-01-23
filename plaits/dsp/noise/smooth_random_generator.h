@@ -50,7 +50,7 @@ public:
     if (phase_ >= 1.0f) {
       phase_ -= 1.0f;
       from_ += interval_;
-      interval_ = Random::get_float() - from_;
+      interval_ = Random::get<float, Random::Bipolar>() - from_;
     }
     float t = phase_ * phase_ * (3.0f - 2.0f * phase_);
     return from_ + interval_ * t;

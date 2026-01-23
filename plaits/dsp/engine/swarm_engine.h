@@ -76,12 +76,12 @@ public:
 
     if (randomize) {
       from_ += interval_;
-      interval_ = Random::get_float_uni() - from_;
+      interval_ = Random::get<float, Random::Unipolar>() - from_;
       // Randomize the duration of the grain.
       if (burst_mode) {
-        fm_ *= 0.8f + 0.2f * Random::get_float_uni();
+        fm_ *= 0.8f + 0.2f * Random::get<float, Random::Unipolar>();
       } else {
-        fm_ = 0.5f + 1.5f * Random::get_float_uni();
+        fm_ = 0.5f + 1.5f * Random::get<float, Random::Unipolar>();
       }
     }
   }

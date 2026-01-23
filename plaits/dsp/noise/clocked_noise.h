@@ -65,7 +65,7 @@ public:
       next_sample = 0.0f;
 
       const float frequency = fm.Next();
-      const float raw_sample = Random::get_float();
+      const float raw_sample = Random::get<float, Random::Bipolar>();
       float raw_amount = 4.0f * (frequency - 0.25f);
       CONSTRAIN(raw_amount, 0.0f, 1.0f);
 

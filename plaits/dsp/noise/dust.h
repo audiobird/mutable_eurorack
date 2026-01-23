@@ -35,7 +35,7 @@ namespace plaits {
 
 inline float Dust(float frequency) {
   float inv_frequency = 1.0f / frequency;
-  float u = Random::get_float_uni();
+  float u = Random::get<float, Random::Unipolar>();
   if (u < frequency) {
     return u * inv_frequency;
   } else {

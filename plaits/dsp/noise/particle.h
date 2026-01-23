@@ -49,7 +49,7 @@ public:
   inline void Render(bool sync, float density, float gain, float frequency,
                      float spread, float q, float *out, float *aux,
                      size_t size) {
-    float u = Random::get_float_uni();
+    float u = Random::get<float, Random::Unipolar>();
     if (sync) {
       u = density;
     }
@@ -59,7 +59,7 @@ public:
       if (u <= density) {
         s = u * gain;
         if (can_radomize_frequency) {
-          const auto u = Random::get_float();
+          const auto u = Random::get<float, Random::Bipolar>();
           const float f =
               std::min(stmlib::SemitonesToRatio(spread * u) * frequency, 0.25f);
           pre_gain_ = 0.5f / std::sqrt(q * f * std::sqrt(density));
@@ -70,7 +70,7 @@ public:
       }
       *aux++ += s;
       *out++ += filter_.Process<stmlib::FILTER_MODE_BAND_PASS>(pre_gain_ * s);
-      u = Random::get_float_uni();
+      u = Random::get<float, Random::Unipolar>();
     }
   }
 

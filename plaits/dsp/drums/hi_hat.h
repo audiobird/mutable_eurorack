@@ -204,7 +204,7 @@ public:
       noise_clock_ += noise_f;
       if (noise_clock_ >= 1.0f) {
         noise_clock_ -= 1.0f;
-        noise_sample_ = Random::get_float_uni() - 0.5f;
+        noise_sample_ = Random::get<float, Random::Unipolar>() - 0.5f;
       }
       out[i] += noisiness * (noise_sample_ - out[i]);
     }

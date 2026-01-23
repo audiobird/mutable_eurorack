@@ -78,7 +78,7 @@ void StringVoice::Render(bool sustain, bool trigger, float accent, float f0,
     size_t tail = size - noise_samples;
     float *start = temp;
     while (noise_samples--) {
-      *start++ = Random::get_float();
+      *start++ = Random::get<float, Random::Bipolar>();
     }
     while (tail--) {
       *start++ = 0.0f;

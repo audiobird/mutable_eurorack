@@ -73,7 +73,7 @@ public:
 
     if (mode_ == ARPEGGIATOR_MODE_RANDOM) {
       while (true) {
-        auto w = Random::get_uint32();
+        auto w = Random::get<uint32_t>();
         int octave = (w >> 4) % range_;
         int note = (w >> 20) % num_notes;
         if (octave != octave_ || note != note_) {

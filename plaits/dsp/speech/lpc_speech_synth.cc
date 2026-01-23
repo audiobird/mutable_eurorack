@@ -84,7 +84,7 @@ void LPCSpeechSynth::Render(float prosody_amount, float pitch_shift,
     }
 
     float e[11];
-    e[10] = Random::get_int16() > 0 ? noise_energy_ : -noise_energy_;
+    e[10] = Random::get<int16_t>() > 0 ? noise_energy_ : -noise_energy_;
     if (excitation_pulse_sample_index_ < LUT_LPC_EXCITATION_PULSE_SIZE) {
       int8_t s = lut_lpc_excitation_pulse[excitation_pulse_sample_index_];
       next_sample += static_cast<float>(s) / 128.0f * pulse_energy_;

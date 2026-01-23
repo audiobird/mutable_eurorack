@@ -100,7 +100,7 @@ public:
     phase_ += scale * frequency_;
     if (phase_ >= 1.0f) {
       phase_ -= 1.0f;
-      random_value_ = Random::get_float_uni();
+      random_value_ = Random::get<float, Random::Unipolar>();
     }
     value_ = value();
 
@@ -116,7 +116,7 @@ public:
     phase_ = phase_fractional;
     if (phase_integral != phase_integral_) {
       phase_integral_ = phase_integral;
-      random_value_ = Random::get_float_uni();
+      random_value_ = Random::get<float, Random::Unipolar>();
     }
     value_ = value();
 

@@ -161,7 +161,7 @@ public:
       drum *= drum_amplitude_ * drum_level;
       drum = drum_lp_.Process<stmlib::FILTER_MODE_LOW_PASS>(drum);
 
-      auto noise = Random::get_float_uni();
+      auto noise = Random::get<float, Random::Unipolar>();
       float snare = snare_lp_.Process<stmlib::FILTER_MODE_LOW_PASS>(noise);
       snare = snare_hp_.Process<stmlib::FILTER_MODE_HIGH_PASS>(snare);
       snare = (snare + 0.1f) * (snare_amplitude_ + fm_) * snare_level;
