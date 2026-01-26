@@ -50,22 +50,21 @@ public:
   void Reset() { engine_.Clear(); }
 
   void Process(float amount, float rt, float *in_out, size_t size) {
-    typedef E::Reserve<
+    using Memory = E::Reserve<
         126,
         E::Reserve<
             180,
             E::Reserve<
                 269, E::Reserve<
-                         444, E::Reserve<1653,
-                                         E::Reserve<2010, E::Reserve<3411>>>>>>>
-        Memory;
-    E::DelayLine<Memory, 0> ap1;
-    E::DelayLine<Memory, 1> ap2;
-    E::DelayLine<Memory, 2> ap3;
-    E::DelayLine<Memory, 3> ap4;
-    E::DelayLine<Memory, 4> dapa;
-    E::DelayLine<Memory, 5> dapb;
-    E::DelayLine<Memory, 6> del;
+                         444, E::Reserve<
+                                  1653, E::Reserve<2010, E::Reserve<3411>>>>>>>;
+    static constexpr E::DelayLine<Memory, 0> ap1;
+    static constexpr E::DelayLine<Memory, 1> ap2;
+    static constexpr E::DelayLine<Memory, 2> ap3;
+    static constexpr E::DelayLine<Memory, 3> ap4;
+    static constexpr E::DelayLine<Memory, 4> dapa;
+    static constexpr E::DelayLine<Memory, 5> dapb;
+    static constexpr E::DelayLine<Memory, 6> del;
     E::Context c;
     const float kap = 0.625f;
     const float klp = 0.75f;
