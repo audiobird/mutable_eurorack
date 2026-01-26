@@ -65,13 +65,13 @@ void NaiveSpeechEngine::Render(const EngineParameters &parameters, float *out,
 
   float blend = parameters.harmonics;
 
-  naive_speech_synth_.Render(parameters.trigger == TRIGGER_RISING_EDGE, f0,
-                             parameters.morph, parameters.timbre,
-                             temp_buffer_[0].data(), aux, out, size);
+  naive_speech_synth_.Render(parameters.trigger, f0, parameters.morph,
+                             parameters.timbre, temp_buffer_[0].data(), aux,
+                             out, size);
 
-  sam_speech_synth_.Render(
-      parameters.trigger == TRIGGER_RISING_EDGE, f0, parameters.morph,
-      parameters.timbre, temp_buffer_[0].data(), temp_buffer_[1].data(), size);
+  sam_speech_synth_.Render(parameters.trigger, f0, parameters.morph,
+                           parameters.timbre, temp_buffer_[0].data(),
+                           temp_buffer_[1].data(), size);
 
   blend *= blend * (3.0f - 2.0f * blend);
   blend *= blend * (3.0f - 2.0f * blend);
