@@ -38,37 +38,55 @@
 
 namespace plaits {
 
-class SpeechEngine {
+class NaiveSpeechEngine {
 public:
-  SpeechEngine() {}
-  ~SpeechEngine() {}
+  void Init();
+  void Reset() {}
+  void Render(const EngineParameters &parameters, float *out, float *aux,
+              size_t size);
+
+private:
+  std::array<std::array<float, kMaxBlockSize>, 2> temp_buffer_;
+  NaiveSpeechSynth naive_speech_synth_;
+  SAMSpeechSynth sam_speech_synth_;
+};
+
+class SamSpeechEngine {
+public:
+  void Init();
+  void Reset() {}
+  void Render(const EngineParameters &parameters, float *out, float *aux,
+              size_t size);
+
+private:
+  LPCSpeechSynthWordBank lpc_speech_synth_word_bank_;
+  std::array<std::array<float, kMaxBlockSize>, 2> temp_buffer_;
+  LPCSpeechSynthController lpc_speech_synth_controller_;
+  SAMSpeechSynth sam_speech_synth_;
+};
+
+class LPCSpeechEngine {
+public:
+  struct Params {
+    // LPC_SPEECH_SYNTH_NUM_WORD_BANKS + 1
+    int bank;
+    float note;
+    float timbre;
+    float morph;
+    float speed;
+    float prosody;
+    bool accent;
+    bool trigger;
+  };
 
   void Init();
   void Reset();
-  void LoadUserData(const uint8_t *user_data) {}
-  void Render(const EngineParameters &parameters, float *out, float *aux,
-              size_t size, bool *already_enveloped);
-
-  inline void set_prosody_amount(float prosody_amount) {
-    prosody_amount_ = prosody_amount;
-  }
-
-  inline void set_speed(float speed) { speed_ = speed; }
+  void Render(const Params &parameters, float *out, float *aux, size_t size,
+              bool *already_enveloped);
 
 private:
-  stmlib::HysteresisQuantizer2 word_bank_quantizer_;
-
-  NaiveSpeechSynth naive_speech_synth_;
-  SAMSpeechSynth sam_speech_synth_;
-
-  LPCSpeechSynthController lpc_speech_synth_controller_;
   LPCSpeechSynthWordBank lpc_speech_synth_word_bank_;
-
-  std::array<std::array<float, kMaxBlockSize>, 2> temp_buffer_;
-  float prosody_amount_;
-  float speed_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpeechEngine);
+  LPCSpeechSynthController lpc_speech_synth_controller_;
 };
 
 } // namespace plaits

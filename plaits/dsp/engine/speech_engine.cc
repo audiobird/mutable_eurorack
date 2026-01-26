@@ -35,70 +35,87 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void SpeechEngine::Init() {
-  sam_speech_synth_.Init();
-  naive_speech_synth_.Init();
+void LPCSpeechEngine::Init() {
   lpc_speech_synth_word_bank_.Init(word_banks_,
                                    LPC_SPEECH_SYNTH_NUM_WORD_BANKS);
   lpc_speech_synth_controller_.Init(&lpc_speech_synth_word_bank_);
-  word_bank_quantizer_.Init(LPC_SPEECH_SYNTH_NUM_WORD_BANKS + 1, 0.1f, false);
-
-  prosody_amount_ = 0.0f;
-  speed_ = 0.0f;
 }
 
-void SpeechEngine::Reset() { lpc_speech_synth_word_bank_.Reset(); }
+void NaiveSpeechEngine::Init() {
+  sam_speech_synth_.Init();
+  naive_speech_synth_.Init();
+}
 
-void SpeechEngine::Render(const EngineParameters &parameters, float *out,
-                          float *aux, size_t size, bool *already_enveloped) {
+void SamSpeechEngine::Init() {
+  sam_speech_synth_.Init();
+  lpc_speech_synth_word_bank_.Init(
+      word_banks_,
+      // for now, we wont use the last word bank, because for whatever reason it
+      // crashes. that's okay though, because the words are kinda lame
+      // TODO: remove bank, or replace with better words, fix crash
+      LPC_SPEECH_SYNTH_NUM_WORD_BANKS - 1);
+  lpc_speech_synth_controller_.Init(&lpc_speech_synth_word_bank_);
+}
+
+void LPCSpeechEngine::Reset() { lpc_speech_synth_word_bank_.Reset(); }
+
+void NaiveSpeechEngine::Render(const EngineParameters &parameters, float *out,
+                               float *aux, size_t size) {
   const float f0 = NoteToFrequency(parameters.note);
 
-  const float group = parameters.harmonics * 6.0f;
+  float blend = parameters.harmonics;
 
-  // Interpolates between the 3 models: naive, SAM, LPC.
-  if (group <= 2.0f) {
-    *already_enveloped = false;
-
-    float blend = group;
-    if (group <= 1.0f) {
-      naive_speech_synth_.Render(parameters.trigger == TRIGGER_RISING_EDGE, f0,
-                                 parameters.morph, parameters.timbre,
-                                 temp_buffer_[0].data(), aux, out, size);
-    } else {
-      lpc_speech_synth_controller_.Render(
-          parameters.trigger & TRIGGER_UNPATCHED,
-          parameters.trigger & TRIGGER_RISING_EDGE, -1, f0, 0.0f, 0.0f,
-          parameters.morph, parameters.timbre, 1.0f, aux, out, size);
-      blend = 2.0f - blend;
-    }
-
-    sam_speech_synth_.Render(parameters.trigger == TRIGGER_RISING_EDGE, f0,
+  naive_speech_synth_.Render(parameters.trigger == TRIGGER_RISING_EDGE, f0,
                              parameters.morph, parameters.timbre,
-                             temp_buffer_[0].data(), temp_buffer_[1].data(),
-                             size);
+                             temp_buffer_[0].data(), aux, out, size);
 
-    blend *= blend * (3.0f - 2.0f * blend);
-    blend *= blend * (3.0f - 2.0f * blend);
-    for (size_t i = 0; i < size; ++i) {
-      aux[i] += (temp_buffer_[0][i] - aux[i]) * blend;
-      out[i] += (temp_buffer_[1][i] - out[i]) * blend;
-    }
-  } else {
-    // Change phonemes/words for LPC.
-    const int word_bank =
-        word_bank_quantizer_.Process((group - 2.0f) * 0.275f) - 1;
+  sam_speech_synth_.Render(
+      parameters.trigger == TRIGGER_RISING_EDGE, f0, parameters.morph,
+      parameters.timbre, temp_buffer_[0].data(), temp_buffer_[1].data(), size);
 
-    const bool replay_prosody =
-        word_bank >= 0 && !(parameters.trigger & TRIGGER_UNPATCHED);
-
-    *already_enveloped = replay_prosody;
-
-    lpc_speech_synth_controller_.Render(
-        parameters.trigger & TRIGGER_UNPATCHED,
-        parameters.trigger & TRIGGER_RISING_EDGE, word_bank, f0,
-        prosody_amount_, speed_, parameters.morph, parameters.timbre,
-        replay_prosody ? parameters.accent : 1.0f, aux, out, size);
+  blend *= blend * (3.0f - 2.0f * blend);
+  blend *= blend * (3.0f - 2.0f * blend);
+  for (size_t i = 0; i < size; ++i) {
+    aux[i] += (temp_buffer_[0][i] - aux[i]) * blend;
+    out[i] += (temp_buffer_[1][i] - out[i]) * blend;
   }
+}
+
+void SamSpeechEngine::Render(const EngineParameters &parameters, float *out,
+                             float *aux, size_t size) {
+  const float f0 = NoteToFrequency(parameters.note);
+
+  lpc_speech_synth_controller_.Render(false, parameters.trigger, -1, f0, 0.0f,
+                                      0.0f, parameters.morph, parameters.timbre,
+                                      1.0f, aux, out, size);
+
+  sam_speech_synth_.Render(parameters.trigger, f0, parameters.morph,
+                           parameters.timbre, temp_buffer_[0].data(),
+                           temp_buffer_[1].data(), size);
+
+  float blend = parameters.harmonics;
+  blend *= blend * (3.0f - 2.0f * blend);
+  blend *= blend * (3.0f - 2.0f * blend);
+  for (size_t i = 0; i < size; ++i) {
+    aux[i] += (temp_buffer_[0][i] - aux[i]) * blend;
+    out[i] += (temp_buffer_[1][i] - out[i]) * blend;
+  }
+}
+
+void LPCSpeechEngine::Render(const Params &parameters, float *out, float *aux,
+                             size_t size, bool *already_enveloped) {
+  const float f0 = NoteToFrequency(parameters.note);
+
+  const int word_bank = parameters.bank - 1;
+
+  const bool replay_prosody = word_bank >= 0;
+
+  *already_enveloped = replay_prosody;
+
+  lpc_speech_synth_controller_.Render(
+      false, parameters.trigger, word_bank, f0, parameters.prosody,
+      parameters.speed, parameters.morph, parameters.timbre,
+      replay_prosody ? parameters.accent : 1.0f, aux, out, size);
 }
 
 } // namespace plaits
