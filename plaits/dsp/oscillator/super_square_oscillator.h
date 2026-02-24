@@ -45,16 +45,6 @@ public:
   SuperSquareOscillator() {}
   ~SuperSquareOscillator() {}
 
-  void Init() {
-    master_phase_ = 0.0f;
-    slave_phase_ = 0.0f;
-    next_sample_ = 0.0f;
-    high_ = false;
-
-    master_frequency_ = 0.0f;
-    slave_frequency_ = 0.01f;
-  }
-
   void Render(float frequency, float shape, float *out, size_t size) {
     float master_frequency = frequency;
     frequency *= shape < 0.5f ? (0.51f + 0.98f * shape)
@@ -143,14 +133,14 @@ public:
 
 private:
   // Oscillator state.
-  float master_phase_;
-  float slave_phase_;
-  float next_sample_;
-  bool high_;
+  float master_phase_{};
+  float slave_phase_{};
+  float next_sample_{};
+  bool high_{};
 
   // For interpolation of parameters.
-  float master_frequency_;
-  float slave_frequency_;
+  float master_frequency_{};
+  float slave_frequency_{.01};
 
   DISALLOW_COPY_AND_ASSIGN(SuperSquareOscillator);
 };

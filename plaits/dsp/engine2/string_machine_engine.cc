@@ -41,7 +41,6 @@ void StringMachineEngine::Init() {
   for (int i = 0; i < kChordNumNotes; ++i) {
     divide_down_voice_[i].Init();
   }
-  chords_.Init();
   morph_lp_ = 0.0f;
   timbre_lp_ = 0.0f;
   svf_[0].Init();

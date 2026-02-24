@@ -35,14 +35,6 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void ChiptuneEngine::Init() {
-  for (int i = 0; i < kChordNumNotes; ++i) {
-    voice_[i].Init();
-  }
-
-  chords_.Init();
-}
-
 void ChiptuneEngine::Reset() { chords_.Reset(); }
 
 void ChiptuneEngine::RenderChord(const EngineParameters &parameters, float *out,

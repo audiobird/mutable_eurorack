@@ -60,8 +60,6 @@ static constexpr float chords_[kChordNumChords][kChordNumNotes] = {
     {0.00f, 3.00f, 6.00f, 9.00f},   // Fully Diminished
 };
 
-void ChordBank::Init() {}
-
 void ChordBank::Reset() {
   for (int i = 0; i < kChordNumChords; ++i) {
     int count = 0;

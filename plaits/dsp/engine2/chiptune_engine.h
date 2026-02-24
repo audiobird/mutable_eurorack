@@ -40,14 +40,13 @@ public:
   ChiptuneEngine() {}
   ~ChiptuneEngine() {}
 
-  void Init();
   void Reset();
   void LoadUserData(const uint8_t *user_data) {}
   void RenderChord(const EngineParameters &parameters, float *out, float *aux,
                    size_t size);
 
 private:
-  SuperSquareOscillator voice_[kChordNumVoices];
+  std::array<SuperSquareOscillator, kChordNumVoices> voice_{};
 
   ChordBank chords_;
 

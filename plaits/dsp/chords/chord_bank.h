@@ -50,7 +50,6 @@ public:
   ChordBank() {}
   ~ChordBank() {}
 
-  void Init();
   void Reset();
 
   int ComputeChordInversion(float inversion, float *ratios, float *amplitudes);
