@@ -100,7 +100,8 @@ public:
     phase_ += scale * frequency_;
     if (phase_ >= 1.0f) {
       phase_ -= 1.0f;
-      random_value_ = Random::get<float, Random::Unipolar>();
+      random_value_ =
+          ToySynth::Random::get<float, ToySynth::Random::Unipolar>();
     }
     value_ = value();
 
@@ -116,7 +117,8 @@ public:
     phase_ = phase_fractional;
     if (phase_integral != phase_integral_) {
       phase_integral_ = phase_integral;
-      random_value_ = Random::get<float, Random::Unipolar>();
+      random_value_ =
+          ToySynth::Random::get<float, ToySynth::Random::Unipolar>();
     }
     value_ = value();
 
@@ -135,20 +137,15 @@ public:
     case WAVEFORM_TRIANGLE:
       return 2.0f * (phase_ < 0.5f ? 0.5f - phase_ : phase_ - 0.5f);
 
-    case WAVEFORM_RAMP_DOWN:
-      return 1.0f - phase_;
+    case WAVEFORM_RAMP_DOWN: return 1.0f - phase_;
 
-    case WAVEFORM_RAMP_UP:
-      return phase_;
+    case WAVEFORM_RAMP_UP: return phase_;
 
-    case WAVEFORM_SQUARE:
-      return phase_ < 0.5f ? 0.0f : 1.0f;
+    case WAVEFORM_SQUARE: return phase_ < 0.5f ? 0.0f : 1.0f;
 
-    case WAVEFORM_SINE:
-      return 0.5f + 0.5f * Sine(phase_ + 0.5f);
+    case WAVEFORM_SINE: return 0.5f + 0.5f * Sine(phase_ + 0.5f);
 
-    case WAVEFORM_S_AND_H:
-      return random_value_;
+    case WAVEFORM_S_AND_H: return random_value_;
     }
     return 0.0f;
   }

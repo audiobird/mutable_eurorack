@@ -77,7 +77,7 @@ public:
   }
 
   float Render() {
-    float sample = Random::get<float, Random::Unipolar>();
+    float sample = ToySynth::Random::get<float, ToySynth::Random::Unipolar>();
     ONE_POLE(lp_, sample, 0.05f);
     ONE_POLE(hp_, lp_, 0.005f);
     return lp_ - hp_;
@@ -160,7 +160,8 @@ public:
                                                size);
 
     while (size--) {
-      const auto t = Random::get<float, Random::Unipolar>() - .5f;
+      const auto t =
+          ToySynth::Random::get<float, ToySynth::Random::Unipolar>() - .5f;
       ONE_POLE(phase_noise_, t, 0.002f);
 
       float mix = 0.0f;

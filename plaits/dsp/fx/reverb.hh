@@ -52,9 +52,9 @@ public:
     engine_.SetLFOFrequency(LFO_2, 0.3f / SAMPLE_RATE);
   }
 
-  void Process(Bus &io, const float amount_, const float diffusion_,
-               const float input_gain_, const float reverb_time_,
-               const float lp_) {
+  void Process(ToySynth::Synth::Bus &io, const float amount_,
+               const float diffusion_, const float input_gain_,
+               const float reverb_time_, const float lp_) {
     // This is the Griesinger topology described in the Dattorro paper
     // (4 AP diffusers on the input, then a loop of 2x 2AP+1Delay).
     // Modulation is applied in the loop of the first diffuser AP for additional
@@ -107,7 +107,8 @@ public:
       c.Interpolate(ap1, 10.0f, LFO_1, 60.0f, 1.0f);
       c.Write(ap1, 100, 0.0f);
 
-      FloatFrame in_out = {Fixed::to_float(io.left), Fixed::to_float(io.right)};
+      FloatFrame in_out = {ToySynth::Fixed::to_float(io.left),
+                           ToySynth::Fixed::to_float(io.right)};
 
       c.Read(in_out.l + in_out.r, gain);
 
@@ -148,8 +149,8 @@ public:
 
       in_out.r += (wet - in_out.r) * amount;
 
-      io.left = Fixed::from_float(in_out.l);
-      io.right = Fixed::from_float(in_out.r);
+      io.left = ToySynth::Fixed::from_float(in_out.l);
+      io.right = ToySynth::Fixed::from_float(in_out.r);
     }
 
     lp_decay_1_ = lp_1;

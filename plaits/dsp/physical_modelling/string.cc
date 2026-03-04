@@ -136,7 +136,8 @@ void String::ProcessInternal(float f0, float non_linearity_amount,
       float s = 0.0f;
 
       if (non_linearity == STRING_NON_LINEARITY_DISPERSION) {
-        float noise = Random::get<float, Random::Unipolar>() - 0.5f;
+        float noise =
+            ToySynth::Random::get<float, ToySynth::Random::Unipolar>() - 0.5f;
         ONE_POLE(dispersion_noise_, noise, noise_filter)
         delay *= 1.0f + dispersion_noise_ * noise_amount;
       } else {
