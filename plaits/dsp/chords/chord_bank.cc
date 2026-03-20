@@ -28,7 +28,8 @@
 
 #include "plaits/dsp/chords/chord_bank.h"
 
-#include "stmlib/dsp/units.h"
+#include "plaits/dsp/engine/engine.h"
+#include "stmlib/dsp/dsp.h"
 
 namespace plaits {
 

@@ -30,6 +30,7 @@
 #define PLAITS_DSP_NOISE_PARTICLE_H_
 
 #include "core/random.hh"
+#include "plaits/dsp/engine/engine.h"
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/filter.h"
 #include "stmlib/dsp/units.h"
@@ -62,7 +63,7 @@ public:
           const auto u =
               ToySynth::Random::get<float, ToySynth::Random::Bipolar>();
           const float f =
-              std::min(stmlib::SemitonesToRatio(spread * u) * frequency, 0.25f);
+              std::min(SemitonesToRatio(spread * u) * frequency, 0.25f);
           pre_gain_ = 0.5f / std::sqrt(q * f * std::sqrt(density));
           filter_.set_f_q<stmlib::FREQUENCY_DIRTY>(f, q);
           // Keep the cutoff constant for this whole block.

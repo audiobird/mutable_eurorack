@@ -31,9 +31,9 @@
 
 #include <algorithm>
 
+#include "plaits/dsp/engine/engine.h"
 #include "stmlib/dsp/filter.h"
 #include "stmlib/dsp/parameter_interpolator.h"
-#include "stmlib/dsp/units.h"
 
 #include "plaits/dsp/dsp.h"
 #include "plaits/dsp/oscillator/sine_oscillator.h"
@@ -80,9 +80,9 @@ public:
     const float kRetrigPulseDuration = 0.05f * kSampleRate;
 
     const float scale = 0.001f / f0;
-    const float q = 1500.0f * stmlib::SemitonesToRatio(decay * 80.0f);
+    const float q = 1500.0f * SemitonesToRatio(decay * 80.0f);
     const float tone_f =
-        std::min(4.0f * f0 * stmlib::SemitonesToRatio(tone * 108.0f), 1.0f);
+        std::min(4.0f * f0 * SemitonesToRatio(tone * 108.0f), 1.0f);
     const float exciter_leak = 0.08f * (tone + 0.25f);
 
     if (trigger) {

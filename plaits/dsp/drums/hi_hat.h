@@ -34,6 +34,7 @@
 #include <algorithm>
 
 #include "core/random.hh"
+#include "plaits/dsp/engine/engine.h"
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/filter.h"
 #include "stmlib/dsp/parameter_interpolator.h"
@@ -173,9 +174,8 @@ public:
               float decay, float noisiness, float *temp_1, float *temp_2,
               float *out, size_t size) {
     const float envelope_decay =
-        1.0f - 0.003f * stmlib::SemitonesToRatio(-decay * 84.0f);
-    const float cut_decay =
-        1.0f - 0.0025f * stmlib::SemitonesToRatio(-decay * 36.0f);
+        1.0f - 0.003f * SemitonesToRatio(-decay * 84.0f);
+    const float cut_decay = 1.0f - 0.0025f * SemitonesToRatio(-decay * 36.0f);
 
     if (trigger) {
       envelope_ = (1.5f + 0.5f * (1.0f - decay)) * (0.3f + 0.7f * accent);
@@ -185,8 +185,7 @@ public:
     metallic_noise_.Render(2.0f * f0, temp_1, temp_2, out, size);
 
     // Apply BPF on the metallic noise.
-    float cutoff =
-        150.0f / kSampleRate * stmlib::SemitonesToRatio(tone * 72.0f);
+    float cutoff = 150.0f / kSampleRate * SemitonesToRatio(tone * 72.0f);
     CONSTRAIN(cutoff, 0.0f, 16000.0f / kSampleRate);
     noise_coloration_svf_.set_f_q<stmlib::FREQUENCY_ACCURATE>(
         cutoff, resonance ? 3.0f + 3.0f * tone : 1.0f);

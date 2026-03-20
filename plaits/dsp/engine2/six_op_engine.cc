@@ -30,6 +30,7 @@
 
 #include <algorithm>
 
+#include "plaits/dsp/dsp.h"
 #include "plaits/resources.h"
 
 namespace plaits {
