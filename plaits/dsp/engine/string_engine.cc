@@ -48,7 +48,7 @@ void StringEngine::Reset() {
 
 void StringEngine::Render(const EngineParameters &parameters, float *out,
                           float *aux, size_t size, bool *already_enveloped) {
-  const float f0_ = NoteToFrequency(parameters.note);
+  const float f0_ = NoteToInc(parameters.note);
 
   fill(&out[0], &out[size], 0.0f);
   fill(&aux[0], &aux[size], 0.0f);

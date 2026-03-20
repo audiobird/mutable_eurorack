@@ -44,7 +44,7 @@ void SnareDrumEngine::Reset() {}
 
 void SnareDrumEngine::Render(const EngineParameters &parameters, float *out,
                              float *aux, size_t size) {
-  const float f0 = NoteToFrequency(parameters.note);
+  const float f0 = NoteToInc(parameters.note);
 
   analog_snare_drum_.Render(parameters.trigger & TRIGGER_UNPATCHED,
                             parameters.trigger & TRIGGER_RISING_EDGE,

@@ -42,7 +42,7 @@ void HiHatEngine::Reset() {}
 
 void HiHatEngine::Render(const EngineParameters &parameters, float *out,
                          float *aux, size_t size) {
-  const float f0 = NoteToFrequency(parameters.note);
+  const float f0 = NoteToInc(parameters.note);
 
   hi_hat_1_.Render(parameters.trigger & TRIGGER_UNPATCHED,
                    parameters.trigger & TRIGGER_RISING_EDGE, parameters.accent,

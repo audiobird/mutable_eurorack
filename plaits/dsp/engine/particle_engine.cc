@@ -46,9 +46,9 @@ void ParticleEngine::Reset() { diffuser_.Reset(); }
 
 void ParticleEngine::Render(const EngineParameters &parameters, float *out,
                             float *aux, size_t size) {
-  const float f0 = NoteToFrequency(parameters.note);
+  const float f0 = NoteToInc(parameters.note);
   const float density_sqrt =
-      NoteToFrequency(60.0f + parameters.timbre * parameters.timbre * 72.0f);
+      NoteToInc(60.0f + parameters.timbre * parameters.timbre * 72.0f);
   const float density = density_sqrt * density_sqrt * (1.0f / kNumParticles);
   const float gain = 1.0f / density;
   const float q_sqrt = SemitonesToRatio(

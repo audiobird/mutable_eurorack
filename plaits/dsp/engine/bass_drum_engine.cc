@@ -45,7 +45,7 @@ void BassDrumEngine::Reset() {}
 
 void BassDrumEngine::Render(const EngineParameters &parameters, float *out,
                             float *aux, size_t size) {
-  const float f0 = NoteToFrequency(parameters.note);
+  const float f0 = NoteToInc(parameters.note);
 
   const float attack_fm_amount = min(parameters.harmonics * 4.0f, 1.0f);
   const float self_fm_amount =

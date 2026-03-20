@@ -39,7 +39,7 @@ void ChiptuneEngine::Reset() { chords_.Reset(); }
 
 void ChiptuneEngine::RenderChord(const EngineParameters &parameters, float *out,
                                  float *aux, size_t size) {
-  const float f0 = NoteToFrequency(parameters.note);
+  const float f0 = NoteToInc(parameters.note);
   const float shape = parameters.morph * 0.995f;
 
   float ratios[kChordNumVoices];

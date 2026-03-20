@@ -61,7 +61,7 @@ void LPCSpeechEngine::Reset() { lpc_speech_synth_word_bank_.Reset(); }
 
 void NaiveSpeechEngine::Render(const EngineParameters &parameters, float *out,
                                float *aux, size_t size) {
-  const float f0 = NoteToFrequency(parameters.note);
+  const float f0 = NoteToInc(parameters.note);
 
   float blend = parameters.harmonics;
 
@@ -83,7 +83,7 @@ void NaiveSpeechEngine::Render(const EngineParameters &parameters, float *out,
 
 void SamSpeechEngine::Render(const EngineParameters &parameters, float *out,
                              float *aux, size_t size) {
-  const float f0 = NoteToFrequency(parameters.note);
+  const float f0 = NoteToInc(parameters.note);
 
   lpc_speech_synth_controller_.Render(false, parameters.trigger, -1, f0, 0.0f,
                                       0.0f, parameters.morph, parameters.timbre,
@@ -104,7 +104,7 @@ void SamSpeechEngine::Render(const EngineParameters &parameters, float *out,
 
 void LPCSpeechEngine::Render(const Params &parameters, float *out, float *aux,
                              size_t size, bool *already_enveloped) {
-  const float f0 = NoteToFrequency(parameters.note);
+  const float f0 = NoteToInc(parameters.note);
 
   const int word_bank = parameters.bank - 1;
 

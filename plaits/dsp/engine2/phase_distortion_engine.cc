@@ -50,7 +50,7 @@ void PhaseDistortionEngine::Reset() {}
 
 void PhaseDistortionEngine::RenderBase(const EngineParameters &parameters,
                                        size_t size) {
-  const float f0 = 0.5f * NoteToFrequency(parameters.note);
+  const float f0 = 0.5f * NoteToInc(parameters.note);
   const float modulator_f = min(
       0.25f, f0 * SemitonesToRatio(Interpolate(lut_fm_frequency_quantizer,
                                                parameters.harmonics, 128.0f)));

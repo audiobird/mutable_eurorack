@@ -48,9 +48,9 @@ void GrainEngine::Reset() {}
 void GrainEngine::Render(const EngineParameters &parameters, float *out,
                          float *aux, size_t size) {
   const float root = parameters.note;
-  const float f0 = NoteToFrequency(root);
+  const float f0 = NoteToInc(root);
 
-  const float f1 = NoteToFrequency(24.0f + 84.0f * parameters.timbre);
+  const float f1 = NoteToInc(24.0f + 84.0f * parameters.timbre);
   const float ratio = SemitonesToRatio(-24.0f + 48.0f * parameters.harmonics);
   const float carrier_bleed =
       parameters.harmonics < 0.5f ? 1.0f - 2.0f * parameters.harmonics : 0.0f;
@@ -66,7 +66,7 @@ void GrainEngine::Render(const EngineParameters &parameters, float *out,
     out[i] = dc_blocker_[0].Process<FILTER_MODE_HIGH_PASS>(out[i] + aux[i]);
   }
 
-  const float cutoff = NoteToFrequency(root + 96.0f * parameters.timbre);
+  const float cutoff = NoteToInc(root + 96.0f * parameters.timbre);
   z_oscillator_.Render(f0, cutoff, parameters.morph, parameters.harmonics, aux,
                        size);
 

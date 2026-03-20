@@ -95,7 +95,7 @@ void StringMachineEngine::Render(const EngineParameters &parameters, float *out,
   // Render string/organ sound.
   fill(&out[0], &out[size], 0.0f);
   fill(&aux[0], &aux[size], 0.0f);
-  const float f0 = NoteToFrequency(parameters.note) * 0.998f;
+  const float f0 = NoteToInc(parameters.note) * 0.998f;
   for (int note = 0; note < kChordNumNotes; ++note) {
     const float note_f0 = f0 * chords_.ratio(note);
     float divide_down_gain = 4.0f - note_f0 * 32.0f;

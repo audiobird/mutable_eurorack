@@ -47,10 +47,10 @@ void SwarmEngine::Reset() {
 
 void SwarmEngine::Render(const EngineParameters &parameters, float *out,
                          float *aux, size_t size) {
-  const float f0 = NoteToFrequency(parameters.note);
+  const float f0 = NoteToInc(parameters.note);
   const float control_rate = static_cast<float>(size);
   const float density =
-      NoteToFrequency(parameters.timbre * 120.0f) * 0.025f * control_rate;
+      NoteToInc(parameters.timbre * 120.0f) * 0.025f * control_rate;
   const float spread =
       parameters.harmonics * parameters.harmonics * parameters.harmonics;
   float size_ratio =
