@@ -80,7 +80,7 @@ class HarmonicOscillator {
       }
       const float two_x = 2.0f * SineNoWrap(phase_);
       float previous, current;
-      if (first_harmonic_index == 1) {
+      if constexpr (first_harmonic_index == 1) {
         previous = 1.0f;
         current = two_x * 0.5f;
       } else {
@@ -96,7 +96,7 @@ class HarmonicOscillator {
         current = two_x * current - previous;
         previous = temp;
       }
-      if (first_harmonic_index == 1) {
+      if constexpr (first_harmonic_index == 1) {
         *out++ = sum;
       } else {
         *out++ += sum;

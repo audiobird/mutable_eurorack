@@ -106,7 +106,7 @@ class NESTriangleOscillator {
         }
         
         float discontinuity = next_step < half ? 1.0f : -1.0f;
-        if (num_steps == 2) {
+        if constexpr (num_steps == 2) {
           discontinuity = -discontinuity;
         } else {
           if (next_step == 0 || next_step == half) {

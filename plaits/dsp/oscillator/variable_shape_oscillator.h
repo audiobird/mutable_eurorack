@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -45,9 +45,9 @@
 namespace plaits {
 
 class VariableShapeOscillator {
- public:
-  VariableShapeOscillator() { }
-  ~VariableShapeOscillator() { }
+public:
+  VariableShapeOscillator() {}
+  ~VariableShapeOscillator() {}
 
   void Init() {
     master_phase_ = 0.0f;
@@ -55,7 +55,7 @@ class VariableShapeOscillator {
     next_sample_ = 0.0f;
     previous_pw_ = 0.5f;
     high_ = false;
-  
+
     master_frequency_ = 0.0f;
     slave_frequency_ = 0.01f;
     pw_ = 0.5f;
@@ -63,64 +63,45 @@ class VariableShapeOscillator {
     phase_modulation_ = 0.0f;
   }
 
-  void Render(
-      float frequency,
-      float pw,
-      float waveshape,
-      float* out,
-      size_t size) {
+  void Render(float frequency, float pw, float waveshape, float *out,
+              size_t size) {
     Render<false, false>(0.0f, frequency, pw, waveshape, 0.0f, out, size);
   }
-  
-  void Render(
-      float master_frequency,
-      float frequency,
-      float pw,
-      float waveshape,
-      float* out,
-      size_t size) {
-    Render<true, false>(
-        master_frequency,
-        frequency,
-        pw,
-        waveshape,
-        0.0f,
-        out, size);
+
+  void Render(float master_frequency, float frequency, float pw,
+              float waveshape, float *out, size_t size) {
+    Render<true, false>(master_frequency, frequency, pw, waveshape, 0.0f, out,
+                        size);
   }
-  
-  template<bool enable_sync, bool output_phase>
-  void Render(
-      float master_frequency,
-      float frequency,
-      float pw,
-      float waveshape,
-      float phase_modulation_amount,
-      float* out,
-      size_t size) {
+
+  template <bool enable_sync, bool output_phase>
+  void Render(float master_frequency, float frequency, float pw,
+              float waveshape, float phase_modulation_amount, float *out,
+              size_t size) {
     if (master_frequency >= kMaxFrequency) {
       master_frequency = kMaxFrequency;
     }
     if (frequency >= kMaxFrequency) {
       frequency = kMaxFrequency;
     }
-    
+
     if (frequency >= 0.25f) {
       pw = 0.5f;
     } else {
       CONSTRAIN(pw, frequency * 2.0f, 1.0f - 2.0f * frequency);
     }
-    
-    stmlib::ParameterInterpolator master_fm(
-        &master_frequency_, master_frequency, size);
+
+    stmlib::ParameterInterpolator master_fm(&master_frequency_,
+                                            master_frequency, size);
     stmlib::ParameterInterpolator fm(&slave_frequency_, frequency, size);
     stmlib::ParameterInterpolator pwm(&pw_, pw, size);
-    stmlib::ParameterInterpolator waveshape_modulation(
-        &waveshape_, waveshape, size);
+    stmlib::ParameterInterpolator waveshape_modulation(&waveshape_, waveshape,
+                                                       size);
     stmlib::ParameterInterpolator phase_modulation(
         &phase_modulation_, phase_modulation_amount, size);
 
     float next_sample = next_sample_;
-    
+
     while (size--) {
       bool reset = false;
       bool transition_during_reset = false;
@@ -128,26 +109,26 @@ class VariableShapeOscillator {
 
       float this_sample = next_sample;
       next_sample = 0.0f;
-    
+
       const float master_frequency = master_fm.Next();
       const float slave_frequency = fm.Next();
       const float pw = pwm.Next();
       const float waveshape = waveshape_modulation.Next();
-      
+
       const float square_amount = std::max(waveshape - 0.5f, 0.0f) * 2.0f;
       const float triangle_amount = std::max(1.0f - waveshape * 2.0f, 0.0f);
-      
+
       const float slope_up = 1.0f / (pw);
       const float slope_down = 1.0f / (1.0f - pw);
 
-      if (enable_sync) {
+      if constexpr (enable_sync) {
         master_phase_ += master_frequency;
         if (master_phase_ >= 1.0f) {
           master_phase_ -= 1.0f;
           reset_time = master_phase_ / master_frequency;
-      
-          float slave_phase_at_reset = slave_phase_ + \
-              (1.0f - reset_time) * slave_frequency;
+
+          float slave_phase_at_reset =
+              slave_phase_ + (1.0f - reset_time) * slave_frequency;
           reset = true;
           if (slave_phase_at_reset >= 1.0f) {
             slave_phase_at_reset -= 1.0f;
@@ -156,23 +137,19 @@ class VariableShapeOscillator {
           if (!high_ && slave_phase_at_reset >= pw) {
             transition_during_reset = true;
           }
-          float value = ComputeNaiveSample(
-              slave_phase_at_reset,
-              pw,
-              slope_up,
-              slope_down,
-              triangle_amount,
-              square_amount);
+          float value =
+              ComputeNaiveSample(slave_phase_at_reset, pw, slope_up, slope_down,
+                                 triangle_amount, square_amount);
           this_sample -= value * stmlib::ThisBlepSample(reset_time);
           next_sample -= value * stmlib::NextBlepSample(reset_time);
         }
-      } else if (output_phase) {
+      } else if constexpr (output_phase) {
         master_phase_ += master_frequency;
         if (master_phase_ >= 1.0f) {
           master_phase_ -= 1.0f;
         }
       }
-      
+
       slave_phase_ += slave_frequency;
       while (transition_during_reset || !reset) {
         if (!high_) {
@@ -182,14 +159,14 @@ class VariableShapeOscillator {
           float t = (slave_phase_ - pw) / (previous_pw_ - pw + slave_frequency);
           float triangle_step = (slope_up + slope_down) * slave_frequency;
           triangle_step *= triangle_amount;
-          
+
           this_sample += square_amount * stmlib::ThisBlepSample(t);
           next_sample += square_amount * stmlib::NextBlepSample(t);
           this_sample -= triangle_step * stmlib::ThisIntegratedBlepSample(t);
           next_sample -= triangle_step * stmlib::NextIntegratedBlepSample(t);
           high_ = true;
         }
-      
+
         if (high_) {
           if (slave_phase_ < 1.0f) {
             break;
@@ -206,28 +183,25 @@ class VariableShapeOscillator {
           high_ = false;
         }
       }
-    
-      if (enable_sync && reset) {
-        slave_phase_ = reset_time * slave_frequency;
-        high_ = false;
+
+      if constexpr (enable_sync) {
+        if (reset) {
+          slave_phase_ = reset_time * slave_frequency;
+          high_ = false;
+        }
       }
-    
-      next_sample += ComputeNaiveSample(
-          slave_phase_,
-          pw,
-          slope_up,
-          slope_down,
-          triangle_amount,
-          square_amount);
+
+      next_sample += ComputeNaiveSample(slave_phase_, pw, slope_up, slope_down,
+                                        triangle_amount, square_amount);
       previous_pw_ = pw;
-      
-      if (output_phase) {
+
+      if constexpr (output_phase) {
         float phasor = master_phase_;
-        if (enable_sync) {
+        if constexpr (enable_sync) {
           // A trick to prevent discontinuities when the phase wraps around.
           const float w = 4.0f * (1.0f - master_phase_) * master_phase_;
           this_sample *= w * (2.0f - w);
-          
+
           // Apply some asymmetry on the main phasor too.
           const float p2 = phasor * phasor;
           phasor += (p2 * p2 - phasor) * fabsf(pw - 0.5f) * 2.0f;
@@ -237,27 +211,22 @@ class VariableShapeOscillator {
         *out++ = (2.0f * this_sample - 1.0f);
       }
     }
-    
+
     next_sample_ = next_sample;
   }
-  
+
   inline void set_master_phase(float master_phase) {
     master_phase_ = master_phase;
   }
-  
- private:
-  inline float ComputeNaiveSample(
-      float phase,
-      float pw,
-      float slope_up,
-      float slope_down,
-      float triangle_amount,
-      float square_amount) const {
+
+private:
+  inline float ComputeNaiveSample(float phase, float pw, float slope_up,
+                                  float slope_down, float triangle_amount,
+                                  float square_amount) const {
     float saw = phase;
     float square = phase < pw ? 0.0f : 1.0f;
-    float triangle = phase < pw
-        ? phase * slope_up
-        : 1.0f - (phase - pw) * slope_down;
+    float triangle =
+        phase < pw ? phase * slope_up : 1.0f - (phase - pw) * slope_down;
     saw += (square - saw) * square_amount;
     saw += (triangle - saw) * triangle_amount;
     return saw;
@@ -279,7 +248,7 @@ class VariableShapeOscillator {
 
   DISALLOW_COPY_AND_ASSIGN(VariableShapeOscillator);
 };
-  
-}  // namespace plaits
 
-#endif  // PLAITS_DSP_OSCILLATOR_VARIABLE_SHAPE_OSCILLATOR_H_
+} // namespace plaits
+
+#endif // PLAITS_DSP_OSCILLATOR_VARIABLE_SHAPE_OSCILLATOR_H_

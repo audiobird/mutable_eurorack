@@ -117,10 +117,10 @@ class WavetableOscillator {
       size_t size) {
     CONSTRAIN(frequency, 0.0000001f, kMaxFrequency)
 
-    if (attenuate_high_frequencies) {
+    if constexpr (attenuate_high_frequencies) {
       amplitude *= 1.0f - 2.0f * frequency;
     }
-    if (approximate_scale) {
+    if constexpr (approximate_scale) {
       amplitude *= 1.0f / (frequency * 131072.0f);
     }
 

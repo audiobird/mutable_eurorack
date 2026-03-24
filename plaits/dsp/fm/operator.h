@@ -113,7 +113,7 @@ void RenderOperators(
         previous_0 = pm;
       }
     }
-    if (additive) {
+    if constexpr (additive) {
       *out++ += pm;
     } else {
       *out++ = pm;

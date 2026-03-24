@@ -224,11 +224,11 @@ class FastSineOscillator {
       const float e = epsilon.Next();
       x += e * y;
       y -= e * x;
-      if (mode == ADDITIVE) {
+      if constexpr (mode == ADDITIVE) {
         *out++ += am.Next() * x;
-      } else if (mode == NORMAL) {
+      } else if constexpr (mode == NORMAL) {
         *out++ = x;
-      } else if (mode == QUADRATURE) {
+      } else if constexpr (mode == QUADRATURE) {
         const float amplitude = am.Next();
         *out++ = x * amplitude;
         *out_2++ = y * amplitude;

@@ -153,11 +153,11 @@ private:
                      : start_level;
     float to = level_[stage];
 
-    if (reshape_ascending_segments && from < to) {
+    if constexpr (reshape_ascending_segments) { if (from < to) {
       from = std::max(6.7f, from);
       to = std::max(6.7f, to);
       phase *= (2.5f - phase) * 0.666667f;
-    }
+    } }
 
     return phase * (to - from) + from;
   }

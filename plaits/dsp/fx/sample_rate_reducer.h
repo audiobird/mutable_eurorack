@@ -49,7 +49,7 @@ class SampleRateReducer {
   
   template<bool optimized_handling_of_special_cases>
   void Process(float frequency, float* in_out, size_t size) {
-    if (optimized_handling_of_special_cases) {
+    if constexpr (optimized_handling_of_special_cases) {
       // Use fast specialized implementations for target rates close to the
       // original rates. Caveats:
       // - The size argument must be a multiple of 4.

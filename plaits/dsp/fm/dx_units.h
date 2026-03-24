@@ -58,22 +58,22 @@ inline float Pow2Fast(float x) {
   } r;
 
   
-  if (order == 1) {
+  if constexpr (order == 1) {
     r.w = float(1 << 23) * (127.0f + x);
     return r.f;
   }
-  
+
   int32_t x_integral = static_cast<int32_t>(x);
   if (x < 0.0f) {
     --x_integral;
   }
   x -= static_cast<float>(x_integral);
 
-  if (order == 1) {
+  if constexpr (order == 1) {
     r.f = 1.0f + x;
-  } else if (order == 2) {
+  } else if constexpr (order == 2) {
     r.f = 1.0f + x * (0.6565f + x * 0.3435f);
-  } else if (order == 3) {
+  } else if constexpr (order == 3) {
     r.f = 1.0f + x * (0.6958f + x * (0.2251f + x * 0.0791f));
   }
   r.w += x_integral << 23;
