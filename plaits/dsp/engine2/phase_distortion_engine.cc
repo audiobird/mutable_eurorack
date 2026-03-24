@@ -35,6 +35,7 @@
 
 #include "plaits/dsp/oscillator/sine_oscillator.h"
 #include "plaits/resources.h"
+#include "stmlib/dsp/units.h"
 
 namespace plaits {
 

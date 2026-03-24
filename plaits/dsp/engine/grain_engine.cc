@@ -29,6 +29,7 @@
 #include <algorithm>
 
 #include "plaits/dsp/engine/grain_engine.h"
+#include "stmlib/dsp/units.h"
 
 namespace plaits {
 

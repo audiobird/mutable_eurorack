@@ -27,6 +27,7 @@
 // Three voices of string synthesis.
 
 #include "plaits/dsp/engine/string_engine.h"
+#include "plaits/dsp/dsp.h"
 
 #include <algorithm>
 

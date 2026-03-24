@@ -27,6 +27,8 @@
 // One voice of modal synthesis.
 
 #include "plaits/dsp/engine/modal_engine.h"
+#include "plaits/dsp/dsp.h"
+#include "stmlib/dsp/dsp.h"
 
 #include <algorithm>
 
