@@ -34,31 +34,6 @@
 
 namespace plaits {
 
-inline float SemitonesToRatio(float semitones) {
-  const auto t = ToySynth::Synth::PhaseStep::semitones_to_ratio(
-      ToySynth::Fixed::from_float(semitones / 128));
-  return t / static_cast<float>(1u << 21);
-}
-
-inline float SemitonesToRatioSafe(float semitones) {
-  float scale = 1.0f;
-  while (semitones > 120.0f) {
-    semitones -= 120.0f;
-    scale *= 1024.0f;
-  }
-  while (semitones < -120.0f) {
-    semitones += 120.0f;
-    scale *= 1.0f / 1024.0f;
-  }
-  return scale * SemitonesToRatio(semitones);
-}
-
-// inline float NoteToInc(float midi_note) {
-//   midi_note -= 9.0f;
-//   CONSTRAIN(midi_note, -128.0f, 127.0f);
-//   return a0 * 0.25f * stmlib::SemitonesToRatio(midi_note);
-// }
-
 inline float NoteToInc(float midi_note) {
   const auto t = ToySynth::Synth::PhaseStep::get_safe(
       ToySynth::Fixed::from_float(midi_note / 128.f));
