@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-//
+// 
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-//
+// 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
+// 
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -29,7 +29,6 @@
 #ifndef PLAITS_DSP_DX_UNITS_H_
 #define PLAITS_DSP_DX_UNITS_H_
 
-#include "plaits/dsp/engine/engine.h"
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/units.h"
 
@@ -51,17 +50,19 @@ extern const float lut_coarse[32];
 // incrementing the exponent of the IEEE 754 representation of the result
 // by int(x). Depending on the use case, the order of the polynomial
 // approximation can be chosen.
-template <int order> inline float Pow2Fast(float x) {
+template<int order>
+inline float Pow2Fast(float x) {
   union {
     float f;
     int32_t w;
   } r;
 
+  
   if (order == 1) {
     r.w = float(1 << 23) * (127.0f + x);
     return r.f;
   }
-
+  
   int32_t x_integral = static_cast<int32_t>(x);
   if (x < 0.0f) {
     --x_integral;
@@ -152,7 +153,8 @@ inline float NormalizeVelocity(float velocity) {
 
 // MIDI note to envelope increment ratio.
 inline float RateScaling(float note, int rate_scaling) {
-  return Pow2Fast<1>(float(rate_scaling) * (note * 0.33333f - 7.0f) * 0.03125f);
+  return Pow2Fast<1>(
+      float(rate_scaling) * (note * 0.33333f - 7.0f) * 0.03125f);
 }
 
 // Operator amplitude modulation sensitivity (0-3).
@@ -166,7 +168,7 @@ inline float PitchModSensitivity(int pitch_mod_sensitivity) {
 }
 
 // Keyboard tracking to TL adjustment.
-inline float KeyboardScaling(float note, const Patch::KeyboardScaling &ks) {
+inline float KeyboardScaling(float note, const Patch::KeyboardScaling& ks) {
   const float x = note - float(ks.break_point) - 15.0f;
   const int curve = x > 0.0f ? ks.right_curve : ks.left_curve;
 
@@ -184,20 +186,21 @@ inline float KeyboardScaling(float note, const Patch::KeyboardScaling &ks) {
   return t * depth * 0.02677f;
 }
 
-inline float FrequencyRatio(const Patch::Operator &op) {
-  const float detune =
-      op.mode == 0 && op.fine ? 1.0f + 0.01f * float(op.fine) : 1.0f;
+inline float FrequencyRatio(const Patch::Operator& op) {
+  const float detune = op.mode == 0 && op.fine
+      ? 1.0f + 0.01f * float(op.fine)
+      : 1.0f;
 
   float base = op.mode == 0
-                   ? lut_coarse[op.coarse]
-                   : float(int(op.coarse & 3) * 100 + op.fine) * 0.39864f;
+      ? lut_coarse[op.coarse]
+      : float(int(op.coarse & 3) * 100 + op.fine) * 0.39864f;
   base += (float(op.detune) - 7.0f) * 0.015f;
 
-  return SemitonesToRatioSafe(base) * detune;
+  return stmlib::SemitonesToRatioSafe(base) * detune;
 }
 
-} // namespace fm
+}  // namespace fm
+  
+}  // namespace plaits
 
-} // namespace plaits
-
-#endif // PLAITS_DSP_DX_UNITS_H_
+#endif  // PLAITS_DSP_DX_UNITS_H_

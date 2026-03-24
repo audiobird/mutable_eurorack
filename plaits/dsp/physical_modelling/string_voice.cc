@@ -31,7 +31,6 @@
 #include <algorithm>
 
 #include "core/random.hh"
-#include "plaits/dsp/engine/engine.h"
 #include "stmlib/dsp/units.h"
 #include "stmlib/utils/random.h"
 
@@ -59,9 +58,10 @@ void StringVoice::Render(bool sustain, bool trigger, float accent, float f0,
   if (trigger || sustain) {
     const float range = 72.0f;
     const float f = 4.0f * f0;
-    const float cutoff = std::min(
-        f * SemitonesToRatio((brightness * (2.0f - brightness) - 0.5f) * range),
-        0.499f);
+    const float cutoff =
+        std::min(f * stmlib::SemitonesToRatio(
+                         (brightness * (2.0f - brightness) - 0.5f) * range),
+                 0.499f);
     const float q = sustain ? 1.0f : 0.5f;
     remaining_noise_samples_ = static_cast<size_t>(1.0f / f0);
     excitation_filter_.set_f_q<stmlib::FREQUENCY_DIRTY>(cutoff, q);

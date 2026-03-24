@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-//
+// 
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-//
+// 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,14 +19,14 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-//
+// 
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
 //
 // Simple modal synthesis voice with a mallet exciter:
 // click -> LPF -> resonator.
-//
+// 
 // The click is replaced by continuous white noise when the trigger input
 // of the module is not patched.
 
@@ -34,7 +34,6 @@
 
 #include <algorithm>
 
-#include "plaits/dsp/engine/engine.h"
 #include "stmlib/dsp/units.h"
 #include "stmlib/utils/random.h"
 
@@ -50,21 +49,30 @@ void ModalVoice::Init() {
   resonator_.Init(0.015f, kMaxNumModes);
 }
 
-void ModalVoice::Render(bool sustain, bool trigger, float accent, float f0,
-                        float structure, float brightness, float damping,
-                        float *temp, float *out, float *aux, size_t size) {
+void ModalVoice::Render(
+    bool sustain,
+    bool trigger,
+    float accent,
+    float f0,
+    float structure,
+    float brightness,
+    float damping,
+    float* temp,
+    float* out,
+    float* aux,
+    size_t size) {
   const float density = brightness * brightness;
-
+  
   brightness += 0.25f * accent * (1.0f - brightness);
   damping += 0.25f * accent * (1.0f - damping);
-
+  
   const float range = sustain ? 36.0f : 60.0f;
   const float f = sustain ? 4.0f * f0 : 2.0f * f0;
   const float cutoff = min(
       f * SemitonesToRatio((brightness * (2.0f - brightness) - 0.5f) * range),
       0.499f);
   const float q = sustain ? 0.7f : 1.5f;
-
+  
   // Synthesize excitation signal.
   if (sustain) {
     const float dust_f = 0.00005f + 0.99995f * density * density;
@@ -80,13 +88,13 @@ void ModalVoice::Render(bool sustain, bool trigger, float accent, float f0,
     }
   }
   const float one = 1.0f;
-  excitation_filter_.Process<FILTER_MODE_LOW_PASS, false>(&cutoff, &q, &one,
-                                                          temp, temp, size);
+  excitation_filter_.Process<FILTER_MODE_LOW_PASS, false>(
+      &cutoff, &q, &one, temp, temp, size);
   for (size_t i = 0; i < size; ++i) {
     aux[i] += temp[i];
   }
-
+  
   resonator_.Process(f0, structure, brightness, damping, temp, out, size);
 }
 
-} // namespace plaits
+}  // namespace plaits

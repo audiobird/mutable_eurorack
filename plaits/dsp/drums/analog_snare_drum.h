@@ -32,7 +32,6 @@
 #include <algorithm>
 
 #include "core/random.hh"
-#include "plaits/dsp/engine/engine.h"
 #include "stmlib/dsp/filter.h"
 #include "stmlib/dsp/parameter_interpolator.h"
 #include "stmlib/dsp/units.h"
@@ -70,9 +69,10 @@ public:
     const float decay_xt = decay * (1.0f + decay * (decay - 1.0f));
     const int kTriggerPulseDuration = 1.0e-3f * kSampleRate;
     const float kPulseDecayTime = 0.1e-3f * kSampleRate;
-    const float q = 2000.0f * SemitonesToRatio(decay_xt * 84.0f);
+    const float q = 2000.0f * stmlib::SemitonesToRatio(decay_xt * 84.0f);
     const float noise_envelope_decay =
-        1.0f - 0.0017f * SemitonesToRatio(-decay * (50.0f + snappy * 10.0f));
+        1.0f -
+        0.0017f * stmlib::SemitonesToRatio(-decay * (50.0f + snappy * 10.0f));
     const float exciter_leak = snappy * (2.0f - snappy) * 0.1f;
 
     snappy = snappy * 1.1f - 0.05f;

@@ -74,11 +74,11 @@ public:
     fm_amount *= fm_amount;
     const float drum_decay =
         1.0f - 1.0f / (0.015f * kSampleRate) *
-                   SemitonesToRatio(-decay_xt * 72.0f - fm_amount * 12.0f +
-                                    snappy * 7.0f);
+                   stmlib::SemitonesToRatio(-decay_xt * 72.0f -
+                                            fm_amount * 12.0f + snappy * 7.0f);
     const float snare_decay =
         1.0f - 1.0f / (0.01f * kSampleRate) *
-                   SemitonesToRatio(-decay * 60.0f - snappy * 7.0f);
+                   stmlib::SemitonesToRatio(-decay * 60.0f - snappy * 7.0f);
     const float fm_decay = 1.0f - 1.0f / (0.007f * kSampleRate);
 
     snappy = snappy * 1.1f - 0.05f;

@@ -31,7 +31,6 @@
 #include <cmath>
 
 #include "core/random.hh"
-#include "plaits/dsp/engine/engine.h"
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/parameter_interpolator.h"
 #include "stmlib/dsp/units.h"
@@ -91,7 +90,8 @@ void String::ProcessInternal(float f0, float non_linearity_amount,
 
   float damping_cutoff =
       std::min(12.0f + damping * damping * 60.0f + brightness * 24.0f, 84.0f);
-  float damping_f = std::min(f0 * SemitonesToRatio(damping_cutoff), 0.499f);
+  float damping_f =
+      std::min(f0 * stmlib::SemitonesToRatio(damping_cutoff), 0.499f);
 
   // Crossfade to infinite decay.
   if (damping >= 0.95f) {

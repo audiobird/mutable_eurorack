@@ -142,10 +142,11 @@ public:
         1.0f / (0.008f * (1.0f + fm_envelope_decay * 4.0f) * kSampleRate);
 
     const float body_env_decay =
-        1.0f - 1.0f / (0.02f * kSampleRate) * SemitonesToRatio(-decay * 60.0f);
+        1.0f -
+        1.0f / (0.02f * kSampleRate) * stmlib::SemitonesToRatio(-decay * 60.0f);
     const float transient_env_decay = 1.0f - 1.0f / (0.005f * kSampleRate);
     const float tone_f =
-        std::min(4.0f * f0 * SemitonesToRatio(tone * 108.0f), 1.0f);
+        std::min(4.0f * f0 * stmlib::SemitonesToRatio(tone * 108.0f), 1.0f);
     const float transient_level = tone;
 
     if (trigger) {

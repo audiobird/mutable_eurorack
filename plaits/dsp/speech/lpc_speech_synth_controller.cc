@@ -30,7 +30,6 @@
 
 #include <algorithm>
 
-#include "plaits/dsp/engine/engine.h"
 #include "stmlib/dsp/units.h"
 #include "stmlib/utils/random.h"
 

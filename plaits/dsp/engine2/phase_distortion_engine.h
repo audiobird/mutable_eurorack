@@ -30,7 +30,6 @@
 #ifndef PLAITS_DSP_ENGINE_PHASE_DISTORTION_ENGINE_H_
 #define PLAITS_DSP_ENGINE_PHASE_DISTORTION_ENGINE_H_
 
-#include "plaits/dsp/dsp.h"
 #include "plaits/dsp/engine/engine.h"
 #include "plaits/dsp/oscillator/variable_shape_oscillator.h"
 #include <array>

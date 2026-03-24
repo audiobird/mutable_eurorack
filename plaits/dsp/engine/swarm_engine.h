@@ -209,7 +209,7 @@ public:
     const float amplitude = envelope_.amplitude(size_ratio) * scale;
 
     const float expo_amount = envelope_.frequency(size_ratio);
-    f0 *= SemitonesToRatio(48.0f * expo_amount * spread * rank_);
+    f0 *= stmlib::SemitonesToRatio(48.0f * expo_amount * spread * rank_);
 
     const float linear_amount = rank_ * (rank_ + 0.01f) * spread * 0.25f;
     f0 *= 1.0f + linear_amount;
