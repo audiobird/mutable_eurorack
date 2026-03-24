@@ -82,10 +82,6 @@ const NaiveSpeechSynth::Phoneme NaiveSpeechSynth::phonemes_[][kNaiveSpeechNumReg
 };
 
 void NaiveSpeechSynth::Init() {
-  pulse_.Init();
-  frequency_ = 0.0f;
-  click_duration_ = 0;
-  
   for (int i = 0; i < kNaiveSpeechNumFormants; ++i) {
     filter_[i].Init();
   }

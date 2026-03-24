@@ -48,11 +48,6 @@ namespace plaits {
 // 808 style "metallic noise" with 6 square oscillators.
 class SquareNoise {
 public:
-  SquareNoise() {}
-  ~SquareNoise() {}
-
-  void Init() { std::fill(&phase_[0], &phase_[6], 0); }
-
   void Render(float f0, float *temp_1, float *temp_2, float *out, size_t size) {
     const float ratios[6] = {// Nominal f0: 414 Hz
                              1.0f, 1.304f, 1.466f, 1.787f, 1.932f, 2.536f};
@@ -90,22 +85,11 @@ public:
   }
 
 private:
-  uint32_t phase_[6];
-
-  DISALLOW_COPY_AND_ASSIGN(SquareNoise);
+  std::array<uint32_t, 6> phase_{};
 };
 
 class RingModNoise {
 public:
-  RingModNoise() {}
-  ~RingModNoise() {}
-
-  void Init() {
-    for (int i = 0; i < 6; ++i) {
-      oscillator_[i].Init();
-    }
-  }
-
   void Render(float f0, float *temp_1, float *temp_2, float *out, size_t size) {
     const float ratio = f0 / (0.01f + f0);
     const float f1a = 200.0f / kSampleRate * ratio;
@@ -132,9 +116,8 @@ private:
       *out++ += *temp_1++ * *temp_2++;
     }
   }
-  Oscillator oscillator_[6];
 
-  DISALLOW_COPY_AND_ASSIGN(RingModNoise);
+  std::array<Oscillator, 6> oscillator_{};
 };
 
 class SwingVCA {
@@ -159,12 +142,6 @@ public:
   ~HiHat() {}
 
   void Init() {
-    envelope_ = 0.0f;
-    noise_clock_ = 0.0f;
-    noise_sample_ = 0.0f;
-    sustain_gain_ = 0.0f;
-
-    metallic_noise_.Init();
     noise_coloration_svf_.Init();
     hpf_.Init();
   }
@@ -225,12 +202,12 @@ public:
   }
 
 private:
-  float envelope_;
-  float noise_clock_;
-  float noise_sample_;
-  float sustain_gain_;
+  float envelope_{};
+  float noise_clock_{};
+  float noise_sample_{};
+  float sustain_gain_{};
 
-  MetallicNoiseSource metallic_noise_;
+  MetallicNoiseSource metallic_noise_{};
   stmlib::Svf noise_coloration_svf_;
   stmlib::Svf hpf_;
 
