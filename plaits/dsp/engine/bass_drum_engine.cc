@@ -35,14 +35,6 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void BassDrumEngine::Init() {
-  analog_bass_drum_.Init();
-  synthetic_bass_drum_.Init();
-  overdrive_.Init();
-}
-
-void BassDrumEngine::Reset() {}
-
 void BassDrumEngine::Render(const EngineParameters &parameters, float *out,
                             float *aux, size_t size) {
   const float f0 = NoteToInc(parameters.note);

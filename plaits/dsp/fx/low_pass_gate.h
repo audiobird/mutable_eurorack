@@ -39,14 +39,6 @@ namespace plaits {
 
 class LowPassGate {
 public:
-  LowPassGate() {}
-  ~LowPassGate() {}
-
-  void Init() {
-    previous_gain_ = 0.0f;
-    filter_.Init();
-  }
-
   void Process(float gain, float frequency, float hf_bleed, float *in_out,
                size_t size) {
     stmlib::ParameterInterpolator gain_modulation(&previous_gain_, gain, size);
@@ -59,10 +51,8 @@ public:
   }
 
 private:
-  float previous_gain_;
-  stmlib::Svf filter_;
-
-  DISALLOW_COPY_AND_ASSIGN(LowPassGate);
+  float previous_gain_{};
+  stmlib::Svf filter_{};
 };
 
 } // namespace plaits

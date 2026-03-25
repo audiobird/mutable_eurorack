@@ -46,23 +46,6 @@ namespace plaits {
 
 class VariableShapeOscillator {
 public:
-  VariableShapeOscillator() {}
-  ~VariableShapeOscillator() {}
-
-  void Init() {
-    master_phase_ = 0.0f;
-    slave_phase_ = 0.0f;
-    next_sample_ = 0.0f;
-    previous_pw_ = 0.5f;
-    high_ = false;
-
-    master_frequency_ = 0.0f;
-    slave_frequency_ = 0.01f;
-    pw_ = 0.5f;
-    waveshape_ = 0.0f;
-    phase_modulation_ = 0.0f;
-  }
-
   void Render(float frequency, float pw, float waveshape, float *out,
               size_t size) {
     Render<false, false>(0.0f, frequency, pw, waveshape, 0.0f, out, size);
@@ -233,20 +216,18 @@ private:
   }
 
   // Oscillator state.
-  float master_phase_;
-  float slave_phase_;
-  float next_sample_;
-  float previous_pw_;
-  bool high_;
+  float master_phase_{};
+  float slave_phase_{};
+  float next_sample_{};
+  float previous_pw_{.5f};
+  bool high_{};
 
   // For interpolation of parameters.
-  float master_frequency_;
-  float slave_frequency_;
-  float pw_;
-  float waveshape_;
-  float phase_modulation_;
-
-  DISALLOW_COPY_AND_ASSIGN(VariableShapeOscillator);
+  float master_frequency_{};
+  float slave_frequency_{0.01f};
+  float pw_{.5f};
+  float waveshape_{};
+  float phase_modulation_{};
 };
 
 } // namespace plaits

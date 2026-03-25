@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -39,7 +39,7 @@
 #include "plaits/resources.h"
 
 namespace plaits {
-  
+
 const float kSineLUTSize = 512.0f;
 const size_t kSineLUTQuadrature = 128;
 const size_t kSineLUTBits = 9;
@@ -62,9 +62,10 @@ inline float SinePM(uint32_t phase, float pm) {
   const float scale = max_uint32 / float(max_index * 2);
 
   phase += static_cast<uint32_t>((pm + offset) * scale) * max_index * 2;
-  
+
   uint32_t integral = phase >> (32 - kSineLUTBits);
-  float fractional = static_cast<float>(phase << kSineLUTBits) / float(max_uint32);
+  float fractional =
+      static_cast<float>(phase << kSineLUTBits) / float(max_uint32);
   float a = lut_sine[integral];
   float b = lut_sine[integral + 1];
   return a + (b - a) * fractional;
@@ -76,55 +77,46 @@ inline float SineRaw(uint32_t phase) {
 }
 
 class SineOscillator {
- public:
-  SineOscillator() { }
-  ~SineOscillator() { }
-
-  void Init() {
-    phase_ = 0.0f;
-    frequency_ = 0.0f;
-    amplitude_ = 0.0f;
-  }
-  
+public:
   inline float Next(float frequency) {
     if (frequency >= 0.5f) {
       frequency = 0.5f;
     }
-    
+
     phase_ += frequency;
     if (phase_ >= 1.0f) {
       phase_ -= 1.0f;
     }
-    
+
     return SineNoWrap(phase_);
   }
-  
-  inline void Next(float frequency, float amplitude, float* sin, float* cos) {
+
+  inline void Next(float frequency, float amplitude, float *sin, float *cos) {
     if (frequency >= 0.5f) {
       frequency = 0.5f;
     }
-    
+
     phase_ += frequency;
     if (phase_ >= 1.0f) {
       phase_ -= 1.0f;
     }
-    
+
     *sin = amplitude * SineNoWrap(phase_);
     *cos = amplitude * SineNoWrap(phase_ + 0.25f);
   }
-  
-  void Render(float frequency, float amplitude, float* out, size_t size) {
+
+  void Render(float frequency, float amplitude, float *out, size_t size) {
     RenderInternal<true>(frequency, amplitude, out, size);
   }
-  
-  void Render(float frequency, float* out, size_t size) {
+
+  void Render(float frequency, float *out, size_t size) {
     RenderInternal<false>(frequency, 1.0f, out, size);
   }
 
- private:
-  template<bool additive>
-  void RenderInternal(
-      float frequency, float amplitude, float* out, size_t size) {
+private:
+  template <bool additive>
+  void RenderInternal(float frequency, float amplitude, float *out,
+                      size_t size) {
     if (frequency >= 0.5f) {
       frequency = 0.5f;
     }
@@ -144,35 +136,19 @@ class SineOscillator {
       }
     }
   }
-  
+
   // Oscillator state.
-  float phase_;
+  float phase_{};
 
   // For interpolation of parameters.
-  float frequency_;
-  float amplitude_;
-  
-  DISALLOW_COPY_AND_ASSIGN(SineOscillator);
+  float frequency_{};
+  float amplitude_{};
 };
 
 class FastSineOscillator {
- public:
-  FastSineOscillator() { }
-  ~FastSineOscillator() { }
+public:
+  enum Mode { NORMAL, ADDITIVE, QUADRATURE };
 
-  void Init() {
-    x_ = 1.0f;
-    y_ = 0.0f;
-    epsilon_ = 0.0f;
-    amplitude_ = 0.0f;
-  }
-  
-  enum Mode {
-    NORMAL,
-    ADDITIVE,
-    QUADRATURE
-  };
-  
   static inline float Fast2Sin(float f) {
     // In theory, epsilon = 2 sin(pi f)
     // Here, to avoid the call to sinf, we use a 3rd order polynomial
@@ -183,43 +159,43 @@ class FastSineOscillator {
     const float f_pi = f * float(M_PI);
     return f_pi * (2.0f - (2.0f * 0.96f / 6.0f) * f_pi * f_pi);
   }
-  
-  void Render(float frequency, float* out, size_t size) {
+
+  void Render(float frequency, float *out, size_t size) {
     RenderInternal<NORMAL>(frequency, 1.0f, out, NULL, size);
   }
-  
-  void Render(float frequency, float amplitude, float* out, size_t size) {
+
+  void Render(float frequency, float amplitude, float *out, size_t size) {
     RenderInternal<ADDITIVE>(frequency, amplitude, out, NULL, size);
   }
 
-  void RenderQuadrature(
-      float frequency, float amplitude, float* x, float* y, size_t size) {
+  void RenderQuadrature(float frequency, float amplitude, float *x, float *y,
+                        size_t size) {
     RenderInternal<QUADRATURE>(frequency, amplitude, x, y, size);
   }
-  
- private:
-  template<Mode mode>
-  void RenderInternal(
-      float frequency, float amplitude, float* out, float* out_2, size_t size) {
+
+private:
+  template <Mode mode>
+  void RenderInternal(float frequency, float amplitude, float *out,
+                      float *out_2, size_t size) {
     if (frequency >= 0.25f) {
       frequency = 0.25f;
       amplitude = 0.0f;
     } else {
       amplitude *= 1.0f - frequency * 4.0f;
     }
-    
+
     stmlib::ParameterInterpolator epsilon(&epsilon_, Fast2Sin(frequency), size);
     stmlib::ParameterInterpolator am(&amplitude_, amplitude, size);
     float x = x_;
     float y = y_;
-    
+
     const float norm = x * x + y * y;
     if (norm <= 0.5f || norm >= 2.0f) {
       const float scale = stmlib::fast_rsqrt_carmack(norm);
       x *= scale;
       y *= scale;
     }
-    
+
     while (size--) {
       const float e = epsilon.Next();
       x += e * y;
@@ -237,18 +213,16 @@ class FastSineOscillator {
     x_ = x;
     y_ = y;
   }
-     
+
   // Oscillator state.
-  float x_;
-  float y_;
+  float x_{1.f};
+  float y_{};
 
   // For interpolation of parameters.
-  float epsilon_;
-  float amplitude_;
-  
-  DISALLOW_COPY_AND_ASSIGN(FastSineOscillator);
+  float epsilon_{};
+  float amplitude_{};
 };
-  
-}  // namespace plaits
 
-#endif  // PLAITS_DSP_OSCILLATOR_SINE_OSCILLATOR_H_
+} // namespace plaits
+
+#endif // PLAITS_DSP_OSCILLATOR_SINE_OSCILLATOR_H_

@@ -27,7 +27,6 @@
 // Three voices of string synthesis.
 
 #include "plaits/dsp/engine/string_engine.h"
-#include "plaits/dsp/dsp.h"
 
 #include <algorithm>
 
@@ -35,17 +34,6 @@ namespace plaits {
 
 using namespace std;
 using namespace stmlib;
-
-void StringEngine::Init(BufferAllocator *allocator) {
-  temp_buffer_ = allocator->Allocate<float>(kMaxBlockSize);
-  voice_.Init(allocator);
-  f0_delay_.Init(allocator->Allocate<float>(16));
-}
-
-void StringEngine::Reset() {
-  f0_delay_.Reset();
-  voice_.Reset();
-}
 
 void StringEngine::Render(const EngineParameters &parameters, float *out,
                           float *aux, size_t size, bool *already_enveloped) {
@@ -58,7 +46,7 @@ void StringEngine::Render(const EngineParameters &parameters, float *out,
                 parameters.trigger & TRIGGER_RISING_EDGE, parameters.accent,
                 f0_, parameters.harmonics,
                 parameters.timbre * parameters.timbre, parameters.morph,
-                temp_buffer_, out, aux, size);
+                temp_buffer_.data(), out, aux, size);
 }
 
 } // namespace plaits

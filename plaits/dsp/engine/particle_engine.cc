@@ -34,13 +34,7 @@ namespace plaits {
 
 using namespace stmlib;
 
-void ParticleEngine::Init() {
-  for (int i = 0; i < kNumParticles; ++i) {
-    particle_[i].Init();
-  }
-  diffuser_.Init();
-  post_filter_.Init();
-}
+void ParticleEngine::Init() { diffuser_.Init(); }
 
 void ParticleEngine::Reset() { diffuser_.Reset(); }
 

@@ -39,22 +39,15 @@ namespace plaits {
 
 class PhaseDistortionEngine {
 public:
-  PhaseDistortionEngine() {}
-  ~PhaseDistortionEngine() {}
-
-  void Init();
-  void Reset();
   void LoadUserData(const uint8_t *user_data) {}
   void RenderOut(const EngineParameters &parameters, float *out, size_t size);
   void RenderAux(const EngineParameters &parameters, float *aux, size_t size);
 
 private:
   void RenderBase(const EngineParameters &parameters, size_t size);
-  VariableShapeOscillator shaper_;
-  VariableShapeOscillator modulator_;
-  std::array<float, kMaxBlockSize * 4> temp_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(PhaseDistortionEngine);
+  VariableShapeOscillator shaper_{};
+  VariableShapeOscillator modulator_{};
+  std::array<float, kMaxBlockSize * 4> temp_buffer_{};
 };
 
 } // namespace plaits

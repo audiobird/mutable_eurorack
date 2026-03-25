@@ -42,25 +42,6 @@ namespace plaits {
 
 class AnalogBassDrum {
 public:
-  AnalogBassDrum() {}
-  ~AnalogBassDrum() {}
-
-  void Init() {
-    pulse_remaining_samples_ = 0;
-    fm_pulse_remaining_samples_ = 0;
-    pulse_ = 0.0f;
-    pulse_height_ = 0.0f;
-    pulse_lp_ = 0.0f;
-    fm_pulse_lp_ = 0.0f;
-    retrig_pulse_ = 0.0f;
-    lp_out_ = 0.0f;
-    tone_lp_ = 0.0f;
-    sustain_gain_ = 0.0f;
-
-    resonator_.Init();
-    oscillator_.Init();
-  }
-
   inline float Diode(float x) {
     if (x >= 0.0f) {
       return x;
@@ -156,23 +137,21 @@ public:
   }
 
 private:
-  int pulse_remaining_samples_;
-  int fm_pulse_remaining_samples_;
-  float pulse_;
-  float pulse_height_;
-  float pulse_lp_;
-  float fm_pulse_lp_;
-  float retrig_pulse_;
-  float lp_out_;
-  float tone_lp_;
-  float sustain_gain_;
+  int pulse_remaining_samples_{};
+  int fm_pulse_remaining_samples_{};
+  float pulse_{};
+  float pulse_height_{};
+  float pulse_lp_{};
+  float fm_pulse_lp_{};
+  float retrig_pulse_{};
+  float lp_out_{};
+  float tone_lp_{};
+  float sustain_gain_{};
 
-  stmlib::Svf resonator_;
+  stmlib::Svf resonator_{};
 
   // Replace the resonator in "free running" (sustain) mode.
-  SineOscillator oscillator_;
-
-  DISALLOW_COPY_AND_ASSIGN(AnalogBassDrum);
+  SineOscillator oscillator_{};
 };
 
 } // namespace plaits

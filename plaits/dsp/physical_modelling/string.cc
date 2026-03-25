@@ -34,25 +34,16 @@
 #include "stmlib/dsp/dsp.h"
 #include "stmlib/dsp/parameter_interpolator.h"
 #include "stmlib/dsp/units.h"
-#include "stmlib/utils/random.h"
 
 #include "plaits/dsp/dsp.h"
 #include "plaits/resources.h"
 
 namespace plaits {
 
-void String::Init(stmlib::BufferAllocator *allocator) {
-  string_.Init(allocator->Allocate<float>(kDelayLineSize));
-  stretch_.Init(allocator->Allocate<float>(kDelayLineSize / 4));
-  delay_ = 100.0f;
-  Reset();
-}
-
 void String::Reset() {
   string_.Reset();
   stretch_.Reset();
-  iir_damping_filter_.Init();
-  dc_blocker_.Init(1.0f - 20.0f / kSampleRate);
+  dc_blocker_ = {};
   dispersion_noise_ = 0.0f;
   curved_bridge_ = 0.0f;
   out_sample_[0] = out_sample_[1] = 0.0f;

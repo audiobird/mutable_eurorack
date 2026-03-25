@@ -46,6 +46,7 @@
 #include "stmlib/stmlib.h"
 
 #include <algorithm>
+#include <array>
 
 #include "plaits/dsp/fm/dx_units.h"
 
@@ -53,27 +54,11 @@ namespace plaits {
 
 namespace fm {
 
-template <int num_stages = 4, bool reshape_ascending_segments = false>
+template <float scale_ = 1, int num_stages = 4,
+          bool reshape_ascending_segments = false>
 class Envelope {
 public:
-  Envelope() {}
-  ~Envelope() {}
-
   enum { NUM_STAGES = num_stages, PREVIOUS_LEVEL = -100 };
-
-  inline void Init() { Init(1.0f); }
-
-  inline void Init(float scale) {
-    scale_ = scale;
-    stage_ = num_stages - 1;
-    phase_ = 1.0f;
-    start_ = 0.0f;
-    for (int i = 0; i < num_stages; ++i) {
-      increment_[i] = 0.001f;
-      level_[i] = 1.0f / float(1 << i);
-    }
-    level_[num_stages - 1] = 0.0f;
-  }
 
   // Directly copy the variables.
   void Set(const float increment[num_stages], const float level[num_stages]) {
@@ -153,28 +138,45 @@ private:
                      : start_level;
     float to = level_[stage];
 
-    if constexpr (reshape_ascending_segments) { if (from < to) {
-      from = std::max(6.7f, from);
-      to = std::max(6.7f, to);
-      phase *= (2.5f - phase) * 0.666667f;
-    } }
+    if constexpr (reshape_ascending_segments) {
+      if (from < to) {
+        from = std::max(6.7f, from);
+        to = std::max(6.7f, to);
+        phase *= (2.5f - phase) * 0.666667f;
+      }
+    }
 
     return phase * (to - from) + from;
   }
 
-  int stage_;
-  float phase_;
-  float start_;
+  int stage_{num_stages - 1};
+  float phase_{1.f};
+  float start_{0.f};
 
 protected:
-  float increment_[num_stages];
-  float level_[num_stages];
-  float scale_;
+  using Inc = std::array<float, num_stages>;
+  using Lev = Inc;
+  Inc increment_ = []() {
+    Inc out{};
+    for (auto &o : out) {
+      o = .001f;
+    }
+    return out;
+  }();
 
-  DISALLOW_COPY_AND_ASSIGN(Envelope);
+  Lev level_ = []() {
+    Lev out{};
+    for (auto i = 0u; i < out.size() - 1; ++i) {
+      out[i] = 1.f / (1 << i);
+    }
+    return out;
+  }();
 };
 
-class OperatorEnvelope : public Envelope<4, true> {
+template <float scale>
+class OperatorEnvelope : public Envelope<scale, 4, true> {
+  static constexpr auto NUM_STAGES = 4;
+
 public:
   void Set(const uint8_t rate[NUM_STAGES], const uint8_t level[NUM_STAGES],
            uint8_t global_level) {
@@ -182,15 +184,15 @@ public:
     for (int i = 0; i < NUM_STAGES; ++i) {
       int level_scaled = OperatorLevel(level[i]);
       level_scaled = (level_scaled & ~1) + global_level - 133; // 125 ?
-      level_[i] =
+      this->level_[i] =
           0.125f * (level_scaled < 1 ? 0.5f : static_cast<float>(level_scaled));
     }
 
     // Configure increments.
     for (int i = 0; i < NUM_STAGES; ++i) {
       float increment = OperatorEnvelopeIncrement(rate[i]);
-      float from = level_[(i - 1 + NUM_STAGES) % NUM_STAGES];
-      float to = level_[i];
+      float from = this->level_[(i - 1 + NUM_STAGES) % NUM_STAGES];
+      float to = this->level_[i];
 
       if (from == to) {
         // Quirk: for plateaux, the increment is scaled.
@@ -212,30 +214,32 @@ public:
       } else {
         increment *= 1.0f / (from - to);
       }
-      increment_[i] = increment * scale_;
+      this->increment_[i] = increment * scale;
     }
   }
 };
 
-class PitchEnvelope : public Envelope<4, false> {
+template <float scale> class PitchEnvelope : public Envelope<scale, 4, false> {
+  static constexpr auto NUM_STAGES = 4;
+
 public:
   void Set(const uint8_t rate[NUM_STAGES], const uint8_t level[NUM_STAGES]) {
     // Configure levels.
     for (int i = 0; i < NUM_STAGES; ++i) {
-      level_[i] = PitchEnvelopeLevel(level[i]);
+      this->level_[i] = PitchEnvelopeLevel(level[i]);
     }
 
     // Configure increments.
     for (int i = 0; i < NUM_STAGES; ++i) {
-      float from = level_[(i - 1 + NUM_STAGES) % NUM_STAGES];
-      float to = level_[i];
+      float from = this->level_[(i - 1 + NUM_STAGES) % NUM_STAGES];
+      float to = this->level_[i];
       float increment = PitchEnvelopeIncrement(rate[i]);
       if (from != to) {
         increment *= 1.0f / fabsf(from - to);
       } else if (i != NUM_STAGES - 1) {
         increment = 0.2f;
       }
-      increment_[i] = increment * scale_;
+      this->increment_[i] = increment * scale;
     }
   }
 };

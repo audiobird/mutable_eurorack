@@ -42,31 +42,27 @@ void StringMachineEngine::Init() {
   for (int i = 0; i < kChordNumNotes; ++i) {
     divide_down_voice_[i].Init();
   }
-  morph_lp_ = 0.0f;
-  timbre_lp_ = 0.0f;
   svf_[0].Init();
   svf_[1].Init();
   ensemble_.Init();
 }
 
-void StringMachineEngine::Reset() {
-  chords_.Reset();
-  ensemble_.Reset();
-}
+void StringMachineEngine::Reset() { ensemble_.Reset(); }
 
-const int kRegistrationTableSize = 11;
-const float registrations[kRegistrationTableSize][kChordNumHarmonics * 2] = {
-    {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Saw
-    {0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f}, // Saw + saw
-    {0.4f, 0.0f, 0.2f, 0.0f, 0.4f, 0.0f}, // Full saw
-    {0.3f, 0.0f, 0.0f, 0.3f, 0.0f, 0.4f}, // Full saw + square hybrid
-    {0.3f, 0.0f, 0.0f, 0.0f, 0.0f, 0.7f}, // Saw + high square harmo
-    {0.2f, 0.0f, 0.0f, 0.2f, 0.0f, 0.6f}, // Weird hybrid
-    {0.0f, 0.2f, 0.1f, 0.0f, 0.2f, 0.5f}, // Sawsquare high harmo
-    {0.0f, 0.3f, 0.0f, 0.3f, 0.0f, 0.4f}, // Square high armo
-    {0.0f, 0.4f, 0.0f, 0.3f, 0.0f, 0.3f}, // Full square
-    {0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f}, // Square + Square
-    {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Square
+static constexpr int kRegistrationTableSize = 11;
+static constexpr float
+    registrations[kRegistrationTableSize][kChordNumHarmonics * 2] = {
+        {1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Saw
+        {0.5f, 0.0f, 0.5f, 0.0f, 0.0f, 0.0f}, // Saw + saw
+        {0.4f, 0.0f, 0.2f, 0.0f, 0.4f, 0.0f}, // Full saw
+        {0.3f, 0.0f, 0.0f, 0.3f, 0.0f, 0.4f}, // Full saw + square hybrid
+        {0.3f, 0.0f, 0.0f, 0.0f, 0.0f, 0.7f}, // Saw + high square harmo
+        {0.2f, 0.0f, 0.0f, 0.2f, 0.0f, 0.6f}, // Weird hybrid
+        {0.0f, 0.2f, 0.1f, 0.0f, 0.2f, 0.5f}, // Sawsquare high harmo
+        {0.0f, 0.3f, 0.0f, 0.3f, 0.0f, 0.4f}, // Square high armo
+        {0.0f, 0.4f, 0.0f, 0.3f, 0.0f, 0.3f}, // Full square
+        {0.0f, 0.5f, 0.0f, 0.5f, 0.0f, 0.0f}, // Square + Square
+        {0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f}, // Square
 };
 
 void StringMachineEngine::ComputeRegistration(float registration,

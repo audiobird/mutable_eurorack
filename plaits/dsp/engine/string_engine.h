@@ -34,24 +34,17 @@
 
 namespace plaits {
 
-class StringEngine : public Engine {
+class StringEngine {
 public:
-  StringEngine() {}
-  ~StringEngine() {}
-
-  virtual void Init(stmlib::BufferAllocator *allocator);
-  virtual void Reset();
-  virtual void LoadUserData(const uint8_t *user_data) {}
-  virtual void Render(const EngineParameters &parameters, float *out,
-                      float *aux, size_t size, bool *already_enveloped);
+  void LoadUserData(const uint8_t *user_data) {}
+  void Render(const EngineParameters &parameters, float *out, float *aux,
+              size_t size, bool *already_enveloped);
 
 private:
-  StringVoice voice_;
+  StringVoice voice_{};
 
-  DelayLine<float, 16> f0_delay_;
-  float *temp_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(StringEngine);
+  DelayLine<float, 16> f0_delay_{};
+  std::array<float, kMaxBlockSize> temp_buffer_{};
 };
 
 } // namespace plaits

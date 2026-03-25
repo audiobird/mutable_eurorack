@@ -42,13 +42,6 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void PhaseDistortionEngine::Init() {
-  modulator_.Init();
-  shaper_.Init();
-}
-
-void PhaseDistortionEngine::Reset() {}
-
 void PhaseDistortionEngine::RenderBase(const EngineParameters &parameters,
                                        size_t size) {
   const float f0 = 0.5f * NoteToInc(parameters.note);

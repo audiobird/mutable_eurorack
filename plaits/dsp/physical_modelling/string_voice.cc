@@ -38,12 +38,6 @@
 
 namespace plaits {
 
-void StringVoice::Init(stmlib::BufferAllocator *allocator) {
-  excitation_filter_.Init();
-  string_.Init(allocator);
-  remaining_noise_samples_ = 0;
-}
-
 void StringVoice::Reset() { string_.Reset(); }
 
 void StringVoice::Render(bool sustain, bool trigger, float accent, float f0,

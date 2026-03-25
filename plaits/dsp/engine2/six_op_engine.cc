@@ -29,9 +29,11 @@
 #include "plaits/dsp/engine2/six_op_engine.h"
 
 #include <algorithm>
+#include <string_view>
 
 #include "plaits/dsp/dsp.h"
-#include "plaits/resources.h"
+#include "plaits/fm_patch_sysex.hh"
+#include "synth/block.hh"
 
 namespace plaits {
 
@@ -39,113 +41,85 @@ using namespace fm;
 using namespace std;
 using namespace stmlib;
 
-void FMVoice::Init(fm::Algorithms<6> *algorithms, float sample_rate) {
-  voice_.Init(algorithms, sample_rate);
-  lfo_.Init(sample_rate);
-
-  parameters_.sustain = false;
-  parameters_.gate = false;
-  parameters_.note = 48.0f;
-  parameters_.velocity = 0.5f;
-  parameters_.brightness = 0.5f;
-  parameters_.envelope_control = 0.5f;
-  parameters_.pitch_mod = 0.0f;
-  parameters_.amp_mod = 0.0f;
-
-  patch_ = NULL;
-}
+void FMVoice::Init(fm::Algorithms<6> *algorithms) { voice_.Init(algorithms); }
 
 void FMVoice::Render(float *buffer, size_t size) {
-  if (!patch_) {
-    return;
-  }
   voice_.Render(parameters_, buffer, size);
 }
 
 void FMVoice::LoadPatch(const fm::Patch *patch) {
-  if (patch == patch_) {
-    return;
-  }
-  patch_ = patch;
-  voice_.SetPatch(patch_);
-  lfo_.Set(patch_->modulations);
+  voice_.SetPatch(patch);
+  lfo_.Set(patch->modulations);
 }
 
-const int kNumPatchesPerBank = 32;
-
-void SixOpEngine::Init(BufferAllocator *allocator) {
-  patch_index_quantizer_.Init(32, 0.005f, false);
-
+void SixOpEngine::Init() {
   algorithms_.Init();
   for (int i = 0; i < kNumSixOpVoices; ++i) {
-    voice_[i].Init(&algorithms_, kCorrectedSampleRate);
-  }
-  temp_buffer_ = allocator->Allocate<float>(kMaxBlockSize * 4);
-  acc_buffer_ = allocator->Allocate<float>(kMaxBlockSize * kNumSixOpVoices);
-  patches_ = allocator->Allocate<fm::Patch>(kNumPatchesPerBank);
-
-  active_voice_ = kNumSixOpVoices - 1;
-  rendered_voice_ = 0;
-}
-
-void SixOpEngine::Reset() {}
-
-void SixOpEngine::LoadUserData(const uint8_t *user_data) {
-  for (int i = 0; i < kNumPatchesPerBank; ++i) {
-    patches_[i].Unpack(user_data + i * fm::Patch::SYX_SIZE);
-  }
-  for (int i = 0; i < kNumSixOpVoices; ++i) {
-    voice_[i].UnloadPatch();
+    voice_[i].Init(&algorithms_);
   }
 }
 
-void SixOpEngine::Render(const EngineParameters &parameters, float *out,
-                         float *aux, size_t size, bool *already_enveloped) {
-  int patch_index =
-      patch_index_quantizer_.Process(parameters.harmonics * 1.02f);
+using PatchBank = std::array<fm::Patch, kNumPatchesPerBank>;
+using Banks = std::array<PatchBank, 3>;
+
+static constexpr Banks bank = []() {
+  Banks out{};
+  for (auto i = 0u; i < out.size(); ++i) {
+    for (auto p = 0u; p < kNumPatchesPerBank; ++p) {
+      out[i][p].Unpack(plaits::fm_patches_table[i] + p * fm::Patch::SYX_SIZE);
+    }
+  }
+  return out;
+}();
+
+void SixOpEngine::Render(const EngineParameters &parameters,
+                         ToySynth::Synth::Bus &bus) {
+  const auto patch_p = static_cast<unsigned>(parameters.harmonics);
+  const auto patch_bank = patch_p / kNumPatchesPerBank;
+  const auto patch_index = patch_p % kNumPatchesPerBank;
 
   if (parameters.trigger & TRIGGER_RISING_EDGE) {
     active_voice_ = (active_voice_ + 1) % kNumSixOpVoices;
-    voice_[active_voice_].LoadPatch(&patches_[patch_index]);
+    voice_[active_voice_].LoadPatch(&bank[patch_bank][patch_index]);
     voice_[active_voice_].mutable_lfo()->Reset();
   }
-  Voice<6>::Parameters *p = voice_[active_voice_].mutable_parameters();
+
+  auto p = voice_[active_voice_].mutable_parameters();
   p->note = parameters.note;
   p->velocity = parameters.accent;
   p->envelope_control = parameters.morph;
-  voice_[active_voice_].mutable_lfo()->Step(float(size));
+  voice_[active_voice_].mutable_lfo()->Step(float(bus.size()));
 
   for (int i = 0; i < kNumSixOpVoices; ++i) {
-    Voice<6>::Parameters *p = voice_[i].mutable_parameters();
+    auto p = voice_[i].mutable_parameters();
     p->brightness = parameters.timbre;
     p->sustain = false;
     p->gate = (parameters.trigger & TRIGGER_HIGH) && (i == active_voice_);
     if (voice_[i].patch() != voice_[active_voice_].patch()) {
-      voice_[i].mutable_lfo()->Step(float(size));
+      voice_[i].mutable_lfo()->Step(float(bus.size()));
       voice_[i].set_modulations(voice_[i].lfo());
     } else {
       voice_[i].set_modulations(voice_[active_voice_].lfo());
     }
   }
 
-  // Naive block rendering.
-  // fill(temp_buffer_[0], temp_buffer_[size], 0.0f);
-  // for (int i = 0; i < kNumSixOpVoices; ++i) {
-  //   voice_[i].Render(temp_buffer_, size);
-  // }
+  std::copy(acc_buffer_.data(),
+            &acc_buffer_[(kNumSixOpVoices - 1) * bus.size()],
+            temp_buffer_.data());
 
-  // Staggered rendering.
-  copy(&acc_buffer_[0], &acc_buffer_[(kNumSixOpVoices - 1) * size],
-       &temp_buffer_[0]);
-  fill(&temp_buffer_[(kNumSixOpVoices - 1) * size],
-       &temp_buffer_[kNumSixOpVoices * size], 0.0f);
+  std::fill(&temp_buffer_[(kNumSixOpVoices - 1) * bus.size()],
+            &temp_buffer_[kNumSixOpVoices * bus.size()], 0.0f);
+
   rendered_voice_ = (rendered_voice_ + 1) % kNumSixOpVoices;
-  voice_[rendered_voice_].Render(temp_buffer_, size * kNumSixOpVoices);
 
-  for (size_t i = 0; i < size; ++i) {
-    aux[i] = out[i] = SoftClip(temp_buffer_[i] * 0.25f);
+  voice_[rendered_voice_].Render(temp_buffer_.data(),
+                                 bus.size() * kNumSixOpVoices);
+
+  for (size_t i = 0; i < bus.size(); ++i) {
+    bus[i].left =
+        ToySynth::Fixed::from_float(SoftClip(temp_buffer_[i] * 0.25f));
   }
-  copy(&temp_buffer_[size], &temp_buffer_[kNumSixOpVoices * size],
+  copy(&temp_buffer_[bus.size()], &temp_buffer_[kNumSixOpVoices * bus.size()],
        &acc_buffer_[0]);
 }
 

@@ -44,25 +44,7 @@ namespace plaits {
 
 class AnalogSnareDrum {
 public:
-  AnalogSnareDrum() {}
-  ~AnalogSnareDrum() {}
-
-  static const int kNumModes = 5;
-
-  void Init() {
-    pulse_remaining_samples_ = 0;
-    pulse_ = 0.0f;
-    pulse_height_ = 0.0f;
-    pulse_lp_ = 0.0f;
-    noise_envelope_ = 0.0f;
-    sustain_gain_ = 0.0f;
-
-    for (int i = 0; i < kNumModes; ++i) {
-      resonator_[i].Init();
-      oscillator_[i].Init();
-    }
-    noise_filter_.Init();
-  }
+  static constexpr int kNumModes = 5;
 
   void Render(bool sustain, bool trigger, float accent, float f0, float tone,
               float decay, float snappy, float *out, size_t size) {
@@ -167,20 +149,18 @@ public:
   }
 
 private:
-  int pulse_remaining_samples_;
-  float pulse_;
-  float pulse_height_;
-  float pulse_lp_;
-  float noise_envelope_;
-  float sustain_gain_;
+  int pulse_remaining_samples_{};
+  float pulse_{};
+  float pulse_height_{};
+  float pulse_lp_{};
+  float noise_envelope_{};
+  float sustain_gain_{};
 
-  stmlib::Svf resonator_[kNumModes];
-  stmlib::Svf noise_filter_;
+  std::array<stmlib::Svf, kNumModes> resonator_{};
+  stmlib::Svf noise_filter_{};
 
   // Replace the resonators in "free running" (sustain) mode.
-  SineOscillator oscillator_[kNumModes];
-
-  DISALLOW_COPY_AND_ASSIGN(AnalogSnareDrum);
+  std::array<SineOscillator, kNumModes> oscillator_{};
 };
 
 } // namespace plaits

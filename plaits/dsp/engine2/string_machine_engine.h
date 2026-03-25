@@ -38,9 +38,6 @@ namespace plaits {
 
 class StringMachineEngine {
 public:
-  StringMachineEngine() {}
-  ~StringMachineEngine() {}
-
   void Init();
   void Reset();
   void LoadUserData(const uint8_t *user_data) {}
@@ -50,16 +47,14 @@ public:
 private:
   void ComputeRegistration(float registration, float *amplitudes);
 
-  ChordBank chords_;
+  ChordBank chords_{};
 
   Ensemble ensemble_;
   StringSynthOscillator divide_down_voice_[kChordNumNotes];
-  stmlib::NaiveSvf svf_[2];
+  std::array<stmlib::NaiveSvf, 2> svf_{};
 
-  float morph_lp_;
-  float timbre_lp_;
-
-  DISALLOW_COPY_AND_ASSIGN(StringMachineEngine);
+  float morph_lp_{};
+  float timbre_lp_{};
 };
 
 } // namespace plaits

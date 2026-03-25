@@ -47,19 +47,6 @@ const int kNumSwarmVoices = 8;
 
 class GrainEnvelope {
 public:
-  GrainEnvelope() {}
-  ~GrainEnvelope() {}
-
-  void Init() {
-    from_ = 0.0f;
-    interval_ = 1.0f;
-    phase_ = 1.0f;
-    fm_ = 0.0f;
-    amplitude_ = 0.5f;
-    previous_size_ratio_ = 0.0f;
-    filter_coefficient_ = 0.0f;
-  }
-
   inline void Step(float rate, bool burst_mode, bool start_burst) {
     bool randomize = false;
     if (start_burst) {
@@ -121,29 +108,17 @@ public:
   }
 
 private:
-  float from_;
-  float interval_;
-  float phase_;
-  float fm_;
-  float amplitude_;
-  float previous_size_ratio_;
-  float filter_coefficient_;
-
-  DISALLOW_COPY_AND_ASSIGN(GrainEnvelope);
+  float from_{};
+  float interval_{1.f};
+  float phase_{1.f};
+  float fm_{};
+  float amplitude_{.5f};
+  float previous_size_ratio_{};
+  float filter_coefficient_{};
 };
 
 class AdditiveSawOscillator {
 public:
-  AdditiveSawOscillator() {}
-  ~AdditiveSawOscillator() {}
-
-  inline void Init() {
-    phase_ = 0.0f;
-    next_sample_ = 0.0f;
-    frequency_ = 0.01f;
-    gain_ = 0.0f;
-  }
-
   inline void Render(float frequency, float level, float *out, size_t size) {
     if (frequency >= kMaxFrequency) {
       frequency = kMaxFrequency;
@@ -178,14 +153,12 @@ public:
 
 private:
   // Oscillator state.
-  float phase_;
-  float next_sample_;
+  float phase_{};
+  float next_sample_{};
 
   // For interpolation of parameters.
-  float frequency_;
-  float gain_;
-
-  DISALLOW_COPY_AND_ASSIGN(AdditiveSawOscillator);
+  float frequency_{.01f};
+  float gain_{};
 };
 
 class SwarmVoice {
@@ -193,12 +166,7 @@ public:
   SwarmVoice() {}
   ~SwarmVoice() {}
 
-  void Init(float rank) {
-    rank_ = rank;
-    envelope_.Init();
-    saw_.Init();
-    sine_.Init();
-  }
+  void Init(float rank) { rank_ = rank; }
 
   void Render(float f0, float density, bool burst_mode, bool start_burst,
               float spread, float size_ratio, float *saw, float *sine,
@@ -221,9 +189,9 @@ public:
 private:
   float rank_;
 
-  GrainEnvelope envelope_;
-  AdditiveSawOscillator saw_;
-  FastSineOscillator sine_;
+  GrainEnvelope envelope_{};
+  AdditiveSawOscillator saw_{};
+  FastSineOscillator sine_{};
 };
 
 class SwarmEngine {

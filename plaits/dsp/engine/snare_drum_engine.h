@@ -37,20 +37,13 @@ namespace plaits {
 
 class SnareDrumEngine {
 public:
-  SnareDrumEngine() {}
-  ~SnareDrumEngine() {}
-
-  void Init();
-  void Reset();
   void LoadUserData(const uint8_t *user_data) {}
   void Render(const EngineParameters &parameters, float *out, float *aux,
               size_t size);
 
 private:
-  AnalogSnareDrum analog_snare_drum_;
-  SyntheticSnareDrum synthetic_snare_drum_;
-
-  DISALLOW_COPY_AND_ASSIGN(SnareDrumEngine);
+  AnalogSnareDrum analog_snare_drum_{};
+  SyntheticSnareDrum synthetic_snare_drum_{};
 };
 
 } // namespace plaits

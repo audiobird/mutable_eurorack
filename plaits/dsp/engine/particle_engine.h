@@ -35,13 +35,10 @@
 
 namespace plaits {
 
-const int kNumParticles = 6;
+inline constexpr auto kNumParticles = 6;
 
 class ParticleEngine {
 public:
-  ParticleEngine() {}
-  ~ParticleEngine() {}
-
   void Init();
   void Reset();
   void LoadUserData(const uint8_t *user_data) {}
@@ -49,11 +46,9 @@ public:
               size_t size);
 
 private:
-  Particle particle_[kNumParticles];
-  Diffuser diffuser_;
-  stmlib::Svf post_filter_;
-
-  DISALLOW_COPY_AND_ASSIGN(ParticleEngine);
+  std::array<Particle, kNumParticles> particle_{};
+  Diffuser diffuser_{};
+  stmlib::Svf post_filter_{};
 };
 
 } // namespace plaits

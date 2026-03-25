@@ -33,11 +33,6 @@ namespace plaits {
 
 using namespace stmlib;
 
-void HiHatEngine::Init() {
-  hi_hat_1_.Init();
-  hi_hat_2_.Init();
-}
-
 void HiHatEngine::Reset() {}
 
 void HiHatEngine::Render(const EngineParameters &parameters, float *out,

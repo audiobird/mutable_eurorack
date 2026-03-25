@@ -36,6 +36,7 @@
 #include <algorithm>
 
 #include "core/random.hh"
+#include "stmlib/dsp/filter.h"
 #include "stmlib/dsp/parameter_interpolator.h"
 #include "stmlib/dsp/units.h"
 
@@ -45,23 +46,6 @@ namespace plaits {
 
 class SyntheticSnareDrum {
 public:
-  SyntheticSnareDrum() {}
-  ~SyntheticSnareDrum() {}
-
-  void Init() {
-    phase_[0] = 0.0f;
-    phase_[1] = 0.0f;
-    drum_amplitude_ = 0.0f;
-    snare_amplitude_ = 0.0f;
-    fm_ = 0.0f;
-    hold_counter_ = 0;
-    sustain_gain_ = 0.0f;
-
-    drum_lp_.Init();
-    snare_hp_.Init();
-    snare_lp_.Init();
-  }
-
   inline float DistortedSine(float phase) {
     float triangle = (phase < 0.5f ? phase : 1.0f - phase) * 4.0f - 1.3f;
     return 2.0f * triangle / (1.0f + std::fabsf(triangle));
@@ -171,18 +155,16 @@ public:
   }
 
 private:
-  float phase_[2];
-  float drum_amplitude_;
-  float snare_amplitude_;
-  float fm_;
-  float sustain_gain_;
-  int hold_counter_;
+  std::array<float, 2> phase_{};
+  float drum_amplitude_{};
+  float snare_amplitude_{};
+  float fm_{};
+  float sustain_gain_{};
+  int hold_counter_{};
 
-  stmlib::OnePole drum_lp_;
-  stmlib::OnePole snare_hp_;
-  stmlib::Svf snare_lp_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyntheticSnareDrum);
+  stmlib::OnePole drum_lp_{};
+  stmlib::OnePole snare_hp_{};
+  stmlib::Svf snare_lp_{};
 };
 
 } // namespace plaits

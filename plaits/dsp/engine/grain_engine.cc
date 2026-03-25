@@ -36,16 +36,6 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void GrainEngine::Init() {
-  grainlet_[0].Init();
-  grainlet_[1].Init();
-  z_oscillator_.Init();
-  dc_blocker_[0].Init();
-  dc_blocker_[1].Init();
-}
-
-void GrainEngine::Reset() {}
-
 void GrainEngine::Render(const EngineParameters &parameters, float *out,
                          float *aux, size_t size) {
   const float root = parameters.note;

@@ -39,22 +39,15 @@ namespace plaits {
 
 class BassDrumEngine {
 public:
-  BassDrumEngine() {}
-  ~BassDrumEngine() {}
-
-  void Init();
-  void Reset();
   void LoadUserData(const uint8_t *user_data) {}
   void Render(const EngineParameters &parameters, float *out, float *aux,
               size_t size);
 
 private:
-  AnalogBassDrum analog_bass_drum_;
-  SyntheticBassDrum synthetic_bass_drum_;
+  AnalogBassDrum analog_bass_drum_{};
+  SyntheticBassDrum synthetic_bass_drum_{};
 
-  Overdrive overdrive_;
-
-  DISALLOW_COPY_AND_ASSIGN(BassDrumEngine);
+  Overdrive overdrive_{};
 };
 
 } // namespace plaits

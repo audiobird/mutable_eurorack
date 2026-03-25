@@ -37,10 +37,6 @@ namespace plaits {
 
 class ChiptuneEngine {
 public:
-  ChiptuneEngine() {}
-  ~ChiptuneEngine() {}
-
-  void Reset();
   void LoadUserData(const uint8_t *user_data) {}
   void RenderChord(const EngineParameters &parameters, float *out, float *aux,
                    size_t size);
@@ -48,9 +44,7 @@ public:
 private:
   std::array<SuperSquareOscillator, kChordNumVoices> voice_{};
 
-  ChordBank chords_;
-
-  DISALLOW_COPY_AND_ASSIGN(ChiptuneEngine);
+  ChordBank chords_{};
 };
 
 } // namespace plaits

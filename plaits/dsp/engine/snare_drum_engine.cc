@@ -35,13 +35,6 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void SnareDrumEngine::Init() {
-  analog_snare_drum_.Init();
-  synthetic_snare_drum_.Init();
-}
-
-void SnareDrumEngine::Reset() {}
-
 void SnareDrumEngine::Render(const EngineParameters &parameters, float *out,
                              float *aux, size_t size) {
   const float f0 = NoteToInc(parameters.note);

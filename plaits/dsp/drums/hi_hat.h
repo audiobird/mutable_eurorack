@@ -138,14 +138,6 @@ template <typename MetallicNoiseSource, typename VCA, bool resonance,
           bool two_stage_envelope>
 class HiHat {
 public:
-  HiHat() {}
-  ~HiHat() {}
-
-  void Init() {
-    noise_coloration_svf_.Init();
-    hpf_.Init();
-  }
-
   void Render(bool sustain, bool trigger, float accent, float f0, float tone,
               float decay, float noisiness, float *temp_1, float *temp_2,
               float *out, size_t size) {
@@ -208,10 +200,8 @@ private:
   float sustain_gain_{};
 
   MetallicNoiseSource metallic_noise_{};
-  stmlib::Svf noise_coloration_svf_;
-  stmlib::Svf hpf_;
-
-  DISALLOW_COPY_AND_ASSIGN(HiHat);
+  stmlib::Svf noise_coloration_svf_{};
+  stmlib::Svf hpf_{};
 };
 
 } // namespace plaits

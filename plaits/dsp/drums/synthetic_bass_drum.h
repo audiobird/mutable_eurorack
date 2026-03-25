@@ -32,6 +32,7 @@
 
 #include "core/random.hh"
 #include "stmlib/dsp/dsp.h"
+#include "stmlib/dsp/filter.h"
 #include "stmlib/dsp/units.h"
 #include "stmlib/utils/random.h"
 
@@ -42,13 +43,7 @@ namespace plaits {
 
 class SyntheticBassDrumClick {
 public:
-  SyntheticBassDrumClick() {}
-  ~SyntheticBassDrumClick() {}
-
   void Init() {
-    lp_ = 0.0f;
-    hp_ = 0.0f;
-    filter_.Init();
     filter_.set_f_q<stmlib::FREQUENCY_FAST>(5000.0f / kSampleRate, 2.0f);
   }
 
@@ -59,23 +54,13 @@ public:
   }
 
 private:
-  float lp_;
-  float hp_;
-  stmlib::Svf filter_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyntheticBassDrumClick);
+  float lp_{};
+  float hp_{};
+  stmlib::Svf filter_{};
 };
 
 class SyntheticBassDrumAttackNoise {
 public:
-  SyntheticBassDrumAttackNoise() {}
-  ~SyntheticBassDrumAttackNoise() {}
-
-  void Init() {
-    lp_ = 0.0f;
-    hp_ = 0.0f;
-  }
-
   float Render() {
     float sample = ToySynth::Random::get<float, ToySynth::Random::Unipolar>();
     ONE_POLE(lp_, sample, 0.05f);
@@ -84,34 +69,12 @@ public:
   }
 
 private:
-  float lp_;
-  float hp_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyntheticBassDrumAttackNoise);
+  float lp_{};
+  float hp_{};
 };
 
 class SyntheticBassDrum {
 public:
-  SyntheticBassDrum() {}
-  ~SyntheticBassDrum() {}
-
-  void Init() {
-    phase_ = 0.0f;
-    phase_noise_ = 0.0f;
-    f0_ = 0.0f;
-    fm_ = 0.0f;
-    fm_lp_ = 0.0f;
-    body_env_lp_ = 0.0f;
-    body_env_ = 0.0f;
-    body_env_pulse_width_ = 0;
-    fm_pulse_width_ = 0;
-    tone_lp_ = 0.0f;
-    sustain_gain_ = 0.0f;
-
-    click_.Init();
-    noise_.Init();
-  }
-
   inline float DistortedSine(float phase, float phase_noise, float dirtiness) {
     phase += phase_noise * dirtiness;
     MAKE_INTEGRAL_FRACTIONAL(phase);
@@ -212,28 +175,26 @@ public:
   }
 
 private:
-  float f0_;
-  float phase_;
-  float phase_noise_;
+  float f0_{};
+  float phase_{};
+  float phase_noise_{};
 
-  float fm_;
-  float fm_lp_;
-  float body_env_;
-  float body_env_lp_;
-  float transient_env_;
-  float transient_env_lp_;
+  float fm_{};
+  float fm_lp_{};
+  float body_env_{};
+  float body_env_lp_{};
+  float transient_env_{};
+  float transient_env_lp_{};
 
-  float sustain_gain_;
+  float sustain_gain_{};
 
-  float tone_lp_;
+  float tone_lp_{};
 
-  SyntheticBassDrumClick click_;
-  SyntheticBassDrumAttackNoise noise_;
+  SyntheticBassDrumClick click_{};
+  SyntheticBassDrumAttackNoise noise_{};
 
-  int body_env_pulse_width_;
-  int fm_pulse_width_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyntheticBassDrum);
+  int body_env_pulse_width_{};
+  int fm_pulse_width_{};
 };
 
 } // namespace plaits

@@ -38,22 +38,16 @@ namespace plaits {
 
 class HiHatEngine {
 public:
-  HiHatEngine() {}
-  ~HiHatEngine() {}
-
-  void Init();
   void Reset();
   void LoadUserData(const uint8_t *user_data) {}
   void Render(const EngineParameters &parameters, float *out, float *aux,
               size_t size);
 
 private:
-  HiHat<SquareNoise, SwingVCA, true, false> hi_hat_1_;
-  HiHat<RingModNoise, LinearVCA, false, true> hi_hat_2_;
+  HiHat<SquareNoise, SwingVCA, true, false> hi_hat_1_{};
+  HiHat<RingModNoise, LinearVCA, false, true> hi_hat_2_{};
 
-  std::array<float, kMaxBlockSize * 2> temp_buffer_;
-
-  DISALLOW_COPY_AND_ASSIGN(HiHatEngine);
+  std::array<float, kMaxBlockSize * 2> temp_buffer_{};
 };
 
 } // namespace plaits

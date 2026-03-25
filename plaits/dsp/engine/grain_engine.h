@@ -40,24 +40,17 @@ namespace plaits {
 
 class GrainEngine {
 public:
-  GrainEngine() {}
-  ~GrainEngine() {}
-
-  void Init();
-  void Reset();
   void LoadUserData(const uint8_t *user_data) {}
   void Render(const EngineParameters &parameters, float *out, float *aux,
               size_t size);
 
 private:
-  GrainletOscillator grainlet_[2];
+  std::array<GrainletOscillator, 2> grainlet_{};
   // VOSIMOscillator vosim_oscillator_;
-  ZOscillator z_oscillator_;
-  stmlib::OnePole dc_blocker_[2];
+  ZOscillator z_oscillator_{};
+  std::array<stmlib::OnePole, 2> dc_blocker_{};
 
-  float grain_balance_;
-
-  DISALLOW_COPY_AND_ASSIGN(GrainEngine);
+  float grain_balance_{};
 };
 
 } // namespace plaits

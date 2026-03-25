@@ -30,12 +30,11 @@
 #define PLAITS_DSP_FM_LFO_H_
 
 #include "core/random.hh"
-#include "stmlib/stmlib.h"
-#include "stmlib/utils/random.h"
 
 #include "plaits/dsp/fm/dx_units.h"
 #include "plaits/dsp/fm/patch.h"
 #include "plaits/dsp/oscillator/sine_oscillator.h"
+#include <array>
 
 namespace plaits {
 
@@ -43,9 +42,6 @@ namespace fm {
 
 class Lfo {
 public:
-  Lfo() {};
-  ~Lfo() {};
-
   enum Waveform {
     WAVEFORM_TRIANGLE,
     WAVEFORM_RAMP_DOWN,
@@ -55,28 +51,10 @@ public:
     WAVEFORM_S_AND_H
   };
 
-  inline void Init(float sample_rate) {
-    phase_ = 0.0f;
-    frequency_ = 0.1f;
-    delay_phase_ = 0.0f;
-    delay_increment_[0] = delay_increment_[1] = 0.1f;
-    random_value_ = value_ = 0.0f;
-
-    one_hz_ = 1.0f / sample_rate;
-
-    amp_mod_depth_ = 0.0f;
-    pitch_mod_depth_ = 0.0f;
-
-    waveform_ = WAVEFORM_TRIANGLE;
-    reset_phase_ = false;
-
-    phase_integral_ = 0;
-  }
-
-  inline void Set(const Patch::ModulationParameters &modulations) {
+  void Set(const Patch::ModulationParameters &modulations) {
     frequency_ = LFOFrequency(modulations.rate) * one_hz_;
 
-    LFODelay(modulations.delay, delay_increment_);
+    LFODelay(modulations.delay, delay_increment_.data());
     delay_increment_[0] *= one_hz_;
     delay_increment_[1] *= one_hz_;
 
@@ -89,14 +67,14 @@ public:
                        PitchModSensitivity(modulations.pitch_mod_sensitivity);
   }
 
-  inline void Reset() {
+  void Reset() {
     if (reset_phase_) {
       phase_ = 0.0f;
     }
     delay_phase_ = 0.0f;
   }
 
-  inline void Step(float scale) {
+  void Step(float scale) {
     phase_ += scale * frequency_;
     if (phase_ >= 1.0f) {
       phase_ -= 1.0f;
@@ -111,7 +89,7 @@ public:
     }
   }
 
-  inline void Scrub(float sample) {
+  void Scrub(float sample) {
     float phase = sample * frequency_;
     MAKE_INTEGRAL_FRACTIONAL(phase)
     phase_ = phase_fractional;
@@ -132,7 +110,7 @@ public:
     }
   }
 
-  inline float value() const {
+  float value() const {
     switch (waveform_) {
     case WAVEFORM_TRIANGLE:
       return 2.0f * (phase_ < 0.5f ? 0.5f - phase_ : phase_ - 0.5f);
@@ -150,37 +128,35 @@ public:
     return 0.0f;
   }
 
-  inline float delay_ramp() const {
+  float delay_ramp() const {
     return delay_phase_ < 0.5f ? 0.0f : (delay_phase_ - 0.5f) * 2.0f;
   }
 
-  inline float pitch_mod() const {
+  float pitch_mod() const {
     return (value_ - 0.5f) * delay_ramp() * pitch_mod_depth_;
   }
 
-  inline float amp_mod() const {
+  float amp_mod() const {
     return (1.0f - value_) * delay_ramp() * amp_mod_depth_;
   }
 
 private:
-  float phase_;
-  float frequency_;
-  float delay_phase_;
-  float delay_increment_[2];
-  float value_;
+  float phase_{};
+  float frequency_{.1f};
+  float delay_phase_{};
+  std::array<float, 2> delay_increment_{.1f, .1f};
+  float value_{};
 
-  float random_value_;
-  float one_hz_;
+  float random_value_{};
+  static constexpr float one_hz_ = 1.f / ToySynth::sample_rate;
 
-  float amp_mod_depth_;
-  float pitch_mod_depth_;
+  float amp_mod_depth_{};
+  float pitch_mod_depth_{};
 
-  Waveform waveform_;
-  bool reset_phase_;
+  Waveform waveform_{};
+  bool reset_phase_{};
 
-  int phase_integral_;
-
-  DISALLOW_COPY_AND_ASSIGN(Lfo);
+  int phase_integral_{};
 };
 
 } // namespace fm

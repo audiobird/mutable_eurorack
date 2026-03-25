@@ -27,7 +27,6 @@
 // One voice of modal synthesis.
 
 #include "plaits/dsp/engine/modal_engine.h"
-#include "plaits/dsp/dsp.h"
 #include "stmlib/dsp/dsp.h"
 
 #include <algorithm>
@@ -36,14 +35,6 @@ namespace plaits {
 
 using namespace std;
 using namespace stmlib;
-
-void ModalEngine::Init(BufferAllocator *allocator) {
-  temp_buffer_ = allocator->Allocate<float>(kMaxBlockSize);
-  harmonics_lp_ = 0.0f;
-  Reset();
-}
-
-void ModalEngine::Reset() { voice_.Init(); }
 
 void ModalEngine::Render(const EngineParameters &parameters, float *out,
                          float *aux, size_t size, bool *already_enveloped) {
@@ -55,7 +46,7 @@ void ModalEngine::Render(const EngineParameters &parameters, float *out,
   voice_.Render(parameters.trigger & TRIGGER_UNPATCHED,
                 parameters.trigger & TRIGGER_RISING_EDGE, parameters.accent,
                 NoteToInc(parameters.note), harmonics_lp_, parameters.timbre,
-                parameters.morph, temp_buffer_, out, aux, size);
+                parameters.morph, temp_buffer_.data(), out, aux, size);
 }
 
 } // namespace plaits

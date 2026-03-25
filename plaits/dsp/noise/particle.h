@@ -38,14 +38,6 @@ namespace plaits {
 
 class Particle {
 public:
-  Particle() {}
-  ~Particle() {}
-
-  inline void Init() {
-    pre_gain_ = 0.0f;
-    filter_.Init();
-  }
-
   inline void Render(bool sync, float density, float gain, float frequency,
                      float spread, float q, float *out, float *aux,
                      size_t size) {
@@ -76,10 +68,8 @@ public:
   }
 
 private:
-  float pre_gain_;
-  stmlib::Svf filter_;
-
-  DISALLOW_COPY_AND_ASSIGN(Particle);
+  float pre_gain_{};
+  stmlib::Svf filter_{};
 };
 
 } // namespace plaits

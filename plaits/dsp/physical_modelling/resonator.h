@@ -8,10 +8,10 @@
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,7 +19,7 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-// 
+//
 // See http://creativecommons.org/licenses/MIT/ for more information.
 //
 // -----------------------------------------------------------------------------
@@ -30,6 +30,7 @@
 #define PLAITS_DSP_PHYSICAL_MODELLING_RESONATOR_H_
 
 #include "stmlib/dsp/filter.h"
+#include <array>
 
 namespace plaits {
 
@@ -38,26 +39,11 @@ const int kModeBatchSize = 4;
 
 // We render 4 modes simultaneously since there are enough registers to hold
 // all state variables.
-template<int batch_size>
-class ResonatorSvf {
- public:
-  ResonatorSvf() { }
-  ~ResonatorSvf() { }
-  
-  void Init() {
-    for (int i = 0; i < batch_size; ++i) {
-      state_1_[i] = state_2_[i] = 0.0f;
-    }
-  }
-  
-  template<stmlib::FilterMode mode, bool add>
-  void Process(
-      const float* f,
-      const float* q,
-      const float* gain,
-      const float* in,
-      float* out,
-      size_t size) {
+template <int batch_size> class ResonatorSvf {
+public:
+  template <stmlib::FilterMode mode, bool add>
+  void Process(const float *f, const float *q, const float *gain,
+               const float *in, float *out, size_t size) {
     float g[batch_size];
     float r[batch_size];
     float r_plus_g[batch_size];
@@ -74,7 +60,7 @@ class ResonatorSvf {
       state_2[i] = state_2_[i];
       gains[i] = gain[i];
     }
-    
+
     while (size--) {
       float s_in = *in++;
       float s_out = 0.0f;
@@ -97,38 +83,30 @@ class ResonatorSvf {
       state_2_[i] = state_2[i];
     }
   }
-  
- private:
-  float state_1_[batch_size];
-  float state_2_[batch_size];
-  
-  DISALLOW_COPY_AND_ASSIGN(ResonatorSvf);
+
+private:
+  std::array<float, batch_size> state_1_{};
+  std::array<float, batch_size> state_2_{};
 };
 
 class Resonator {
- public:
-  Resonator() { }
-  ~Resonator() { }
-  
-  void Init(float position, int resolution);
-  void Process(
-      float f0,
-      float structure,
-      float brightness,
-      float damping,
-      const float* in,
-      float* out,
-      size_t size);
-  
- private:
-  int resolution_;
-  
-  float mode_amplitude_[kMaxNumModes];
-  ResonatorSvf<kModeBatchSize> mode_filters_[kMaxNumModes / kModeBatchSize];
-  
-  DISALLOW_COPY_AND_ASSIGN(Resonator);
+public:
+  void Process(float f0, float structure, float brightness, float damping,
+               const float *in, float *out, size_t size);
+
+private:
+  static constexpr auto resolution_{kMaxNumModes};
+
+  static constexpr std::array<float, kMaxNumModes> mode_amplitude_{
+      0.25,       0.24954998, 0.24820322, 0.24596936,  0.24286449, 0.238911,
+      0.23413733, 0.22857785, 0.2222726,  0.21526697,  0.20761141, 0.19936106,
+      0.19057527, 0.18131734, 0.17165393, 0.16165459,  0.15139134, 0.14093807,
+      0.13037005, 0.11976336, 0.10919437, 0.098739184, 0.08847308, 0.078469984};
+
+  std::array<ResonatorSvf<kModeBatchSize>, kMaxNumModes / kModeBatchSize>
+      mode_filters_{};
 };
 
-}  // namespace plaits
+} // namespace plaits
 
-#endif  // PLAITS_DSP_PHYSICAL_MODELLING_RESONATOR_H_
+#endif // PLAITS_DSP_PHYSICAL_MODELLING_RESONATOR_H_

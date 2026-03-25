@@ -30,48 +30,31 @@
 #ifndef PLAITS_DSP_SPEECH_NAIVE_SPEECH_SYNTH_H_
 #define PLAITS_DSP_SPEECH_NAIVE_SPEECH_SYNTH_H_
 
-#include "stmlib/dsp/filter.h"
-
 #include "plaits/dsp/dsp.h"
 #include "plaits/dsp/oscillator/oscillator.h"
+#include "stmlib/dsp/filter.h"
+#include <array>
 
 namespace plaits {
 
-const int kNaiveSpeechNumFormants = 5;
-const int kNaiveSpeechNumPhonemes = 5;
-const int kNaiveSpeechNumRegisters = 5;
+inline constexpr int kNaiveSpeechNumFormants = 5;
+inline constexpr int kNaiveSpeechNumPhonemes = 5;
+inline constexpr int kNaiveSpeechNumRegisters = 5;
 
 class NaiveSpeechSynth {
 public:
-  NaiveSpeechSynth() {}
-  ~NaiveSpeechSynth() {}
-
   void Init();
 
   void Render(bool click, float frequency, float phoneme, float vocal_register,
               float *temp, float *excitation, float *output, size_t size);
 
 private:
-  struct Formant {
-    uint8_t frequency;
-    uint8_t amplitude;
-  };
-
-  struct Phoneme {
-    Formant formant[kNaiveSpeechNumFormants];
-  };
-
   Oscillator pulse_{};
   float frequency_{};
   size_t click_duration_{};
 
-  stmlib::Svf filter_[kNaiveSpeechNumFormants];
-  stmlib::Svf pulse_coloration_;
-
-  static const Phoneme phonemes_[kNaiveSpeechNumPhonemes]
-                                [kNaiveSpeechNumRegisters];
-
-  DISALLOW_COPY_AND_ASSIGN(NaiveSpeechSynth);
+  std::array<stmlib::Svf, kNaiveSpeechNumFormants> filter_{};
+  stmlib::Svf pulse_coloration_{};
 };
 
 } // namespace plaits

@@ -29,51 +29,53 @@
 #include "plaits/dsp/chords/chord_bank.h"
 
 #include "stmlib/dsp/units.h"
+#include <initializer_list>
 
 namespace plaits {
 
 using namespace stmlib;
 
-// Alternative chord table by Jon Butler jonbutler88@gmail.com
-/* static */
-static constexpr float chords_[kChordNumChords][kChordNumNotes] = {
-    // Fixed Intervals
-    {0.00f, 0.01f, 11.99f, 12.00f}, // Octave
-    {0.00f, 7.00f, 7.01f, 12.00f},  // Fifth
-    // Minor
-    {0.00f, 3.00f, 7.00f, 12.00f},  // Minor
-    {0.00f, 3.00f, 7.00f, 10.00f},  // Minor 7th
-    {0.00f, 3.00f, 10.00f, 14.00f}, // Minor 9th
-    {0.00f, 3.00f, 10.00f, 17.00f}, // Minor 11th
-    // Major
-    {0.00f, 4.00f, 7.00f, 12.00f},  // Major
-    {0.00f, 4.00f, 7.00f, 11.00f},  // Major 7th
-    {0.00f, 4.00f, 11.00f, 14.00f}, // Major 9th
-    // Colour Chords
-    {0.00f, 5.00f, 7.00f, 12.00f},  // Sus4
-    {0.00f, 2.00f, 9.00f, 16.00f},  // 69
-    {0.00f, 4.00f, 7.00f, 9.00f},   // 6th
-    {0.00f, 7.00f, 16.00f, 23.00f}, // 10th (Spread maj7)
-    {0.00f, 4.00f, 7.00f, 10.00f},  // Dominant 7th
-    {0.00f, 7.00f, 10.00f, 13.00f}, // Dominant 7th (b9)
-    {0.00f, 3.00f, 6.00f, 10.00f},  // Half Diminished
-    {0.00f, 3.00f, 6.00f, 9.00f},   // Fully Diminished
+struct ChordRatio {
+  constexpr ChordRatio(std::initializer_list<float> interval, int count)
+      : count{count} {
+    for (auto [i, r] : std::ranges::zip_view(interval, ratio)) {
+      r = std::pow(2, i / 12.f);
+    }
+  }
+
+  std::array<float, 4> ratio{};
+  int count{};
 };
 
-void ChordBank::Reset() {
-  for (int i = 0; i < kChordNumChords; ++i) {
-    int count = 0;
-    for (int j = 0; j < kChordNumNotes; ++j) {
-      ratios_[i * kChordNumNotes + j] = SemitonesToRatio(chords_[i][j]);
-      if (chords_[i][j] != 0.01f && chords_[i][j] != 7.01f &&
-          chords_[i][j] != 11.99f && chords_[i][j] != 12.00f) {
-        ++count;
-      }
-    }
-    note_count_[i] = count;
-  }
-  Sort();
+static constexpr std::array<ChordRatio, kChordNumChords> chords_ = {
+    // Fixed Intervals
+    ChordRatio{{0.00f, 0.01f, 11.99f, 12.00f}, 1}, // Octave
+    ChordRatio{{0.00f, 7.00f, 7.01f, 12.00f}, 2},  // Fifth
+    // Minor
+    ChordRatio{{0.00f, 3.00f, 7.00f, 12.00f}, 3},  // Minor
+    ChordRatio{{0.00f, 3.00f, 7.00f, 10.00f}, 4},  // Minor 7th
+    ChordRatio{{0.00f, 3.00f, 10.00f, 14.00f}, 4}, // Minor 9th
+    ChordRatio{{0.00f, 3.00f, 10.00f, 17.00f}, 4}, // Minor 11th
+    // Major
+    ChordRatio{{0.00f, 4.00f, 7.00f, 12.00f}, 3},  // Major
+    ChordRatio{{0.00f, 4.00f, 7.00f, 11.00f}, 4},  // Major 7th
+    ChordRatio{{0.00f, 4.00f, 11.00f, 14.00f}, 4}, // Major 9th
+    // Colour Chords
+    ChordRatio{{0.00f, 5.00f, 7.00f, 12.00f}, 3},  // Sus4
+    ChordRatio{{0.00f, 2.00f, 9.00f, 16.00f}, 4},  // 69
+    ChordRatio{{0.00f, 4.00f, 7.00f, 9.00f}, 4},   // 6th
+    ChordRatio{{0.00f, 7.00f, 16.00f, 23.00f}, 4}, // 10th (Spread maj7)
+    ChordRatio{{0.00f, 4.00f, 7.00f, 10.00f}, 4},  // Dominant 7th
+    ChordRatio{{0.00f, 7.00f, 10.00f, 13.00f}, 4}, // Dominant 7th (b9)
+    ChordRatio{{0.00f, 3.00f, 6.00f, 10.00f}, 4},  // Half Diminished
+    ChordRatio{{0.00f, 3.00f, 6.00f, 9.00f}, 4},   // Fully Diminished
+};
+
+const float *ChordBank::ratios() const {
+  return chords_[chord_idx_].ratio.data();
 }
+
+int ChordBank::num_notes() const { return chords_[chord_idx_].count; }
 
 int ChordBank::ComputeChordInversion(float inversion, float *ratios,
                                      float *amplitudes) {
