@@ -100,11 +100,47 @@ void LPCSpeechSynthWordBank::Reset() {
   fill(&word_boundaries_[0], &word_boundaries_[kLPCSpeechSynthMaxWords], 0);
 }
 
-inline constexpr auto parse_word(const std::span<const uint8_t> w) {
+constexpr auto calc_word_num_frames(std::span<const uint8_t> w) {
+  [[maybe_unused]] BitStream bitstream{};
+  bitstream.Init(w.data());
+  auto out = 0u;
+
+  while (true) {
+    int energy = bitstream.GetBits(4);
+    if (energy == 0) {
+    } else if (energy == 0xf) {
+      bitstream.Flush();
+      break;
+    } else {
+      const auto repeat = bitstream.GetBits(1);
+      const auto period = period_lut_[bitstream.GetBits(6)];
+      if (!repeat) {
+        bitstream.GetBits(5);
+        bitstream.GetBits(5);
+        bitstream.GetBits(4);
+        bitstream.GetBits(4);
+        if (period) {
+          bitstream.GetBits(4);
+          bitstream.GetBits(4);
+          bitstream.GetBits(4);
+          bitstream.GetBits(3);
+          bitstream.GetBits(3);
+          bitstream.GetBits(3);
+        }
+      }
+    }
+    ++out;
+  }
+  return out;
+};
+
+template <uint32_t size>
+constexpr auto parse_word(const std::span<const uint8_t> w) {
   [[maybe_unused]] BitStream bitstream{};
   bitstream.Init(w.data());
 
-  std::vector<LPCSpeechSynth::Frame> out = {};
+  std::array<LPCSpeechSynth::Frame, size> out = {};
+  auto cnt = 0u;
 
   LPCSpeechSynth::Frame frame{};
 
@@ -134,15 +170,20 @@ inline constexpr auto parse_word(const std::span<const uint8_t> w) {
         }
       }
     }
-    out.push_back(frame);
+    out[cnt++] = frame;
   }
-  return std::array<uint8_t, out.size()>{};
-  // return out.size();
-  //  return frame;
+
+  return out;
 };
 
-inline constexpr auto t = parse_word(LPCWords::Nato::a);
-static_assert(t == 20);
+template <auto T> constexpr auto tt() {
+  return parse_word<calc_word_num_frames(T)>(T);
+};
+
+static constexpr auto t = tt<LPCWords::Nato::b>();
+
+static constexpr auto t = parse_word<LPCWords::Nato::b>();
+static_assert(t == 23);
 
 size_t LPCSpeechSynthWordBank::LoadNextWord(const uint8_t *data) {
   BitStream bitstream;

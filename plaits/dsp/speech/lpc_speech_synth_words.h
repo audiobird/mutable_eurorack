@@ -32,6 +32,7 @@
 #include "plaits/dsp/speech/lpc_speech_synth_controller.h"
 #include <array>
 #include <span>
+#include <vector>
 
 #define LPC_SPEECH_SYNTH_NUM_WORD_BANKS 5
 
