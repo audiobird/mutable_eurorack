@@ -38,22 +38,15 @@ namespace plaits {
 
 class BitStream {
 public:
-  BitStream() {}
-  ~BitStream() {}
+  constexpr void Init(const uint8_t *p) { p_ = p; }
 
-  inline void Init(const uint8_t *p) {
-    p_ = p;
-    available_ = 0;
-    bits_ = 0;
-  }
-
-  inline void Flush() {
+  constexpr void Flush() {
     while (available_) {
       GetBits(1);
     }
   }
 
-  inline uint8_t GetBits(int num_bits) {
+  constexpr uint8_t GetBits(int num_bits) {
     int shift = num_bits;
     if (num_bits > available_) {
       bits_ <<= available_;
@@ -68,10 +61,10 @@ public:
     return result;
   }
 
-  inline const uint8_t *ptr() const { return p_; }
+  constexpr const uint8_t *ptr() const { return p_; }
 
 private:
-  inline uint8_t Reverse(uint8_t b) const {
+  constexpr uint8_t Reverse(uint8_t b) const {
     b = (b >> 4) | (b << 4);
     b = ((b & 0xcc) >> 2) | ((b & 0x33) << 2);
     b = ((b & 0xaa) >> 1) | ((b & 0x55) << 1);
@@ -79,19 +72,17 @@ private:
   }
 
   const uint8_t *p_;
-  int available_;
-  uint16_t bits_;
-
-  DISALLOW_COPY_AND_ASSIGN(BitStream);
+  int available_{};
+  uint16_t bits_{};
 };
 
-const int kLPCSpeechSynthMaxWords = 32;
-const int kLPCSpeechSynthMaxFrames = 1024;
-const int kLPCSpeechSynthNumVowels = 5;
-const int kLPCSpeechSynthNumConsonants = 10;
-const int kLPCSpeechSynthNumPhonemes =
+inline constexpr int kLPCSpeechSynthMaxWords = 32;
+inline constexpr int kLPCSpeechSynthMaxFrames = 1024;
+inline constexpr int kLPCSpeechSynthNumVowels = 5;
+inline constexpr int kLPCSpeechSynthNumConsonants = 10;
+inline constexpr int kLPCSpeechSynthNumPhonemes =
     kLPCSpeechSynthNumVowels + kLPCSpeechSynthNumConsonants;
-const float kLPCSpeechSynthFPS = 40.0f;
+inline constexpr float kLPCSpeechSynthFPS = 40.0f;
 
 struct LPCSpeechSynthWordBankData {
   const uint8_t *data;
@@ -136,19 +127,6 @@ private:
 
   std::array<int, kLPCSpeechSynthMaxWords> word_boundaries_;
   std::array<LPCSpeechSynth::Frame, kLPCSpeechSynthMaxFrames> frames_;
-
-  static const uint8_t energy_lut_[16];
-  static const uint8_t period_lut_[64];
-  static const int16_t k0_lut_[32];
-  static const int16_t k1_lut_[32];
-  static const int8_t k2_lut_[16];
-  static const int8_t k3_lut_[16];
-  static const int8_t k4_lut_[16];
-  static const int8_t k5_lut_[16];
-  static const int8_t k6_lut_[16];
-  static const int8_t k7_lut_[8];
-  static const int8_t k8_lut_[8];
-  static const int8_t k9_lut_[8];
 };
 
 class LPCSpeechSynthController {
@@ -158,10 +136,13 @@ public:
 
   void Init(LPCSpeechSynthWordBank *word_bank);
 
-  void Render(bool free_running, bool trigger, int bank, float frequency,
-              float prosody_amount, float speed, float address,
-              float formant_shift, float gain, float *excitation, float *output,
-              size_t size);
+  void RenderNoBank(bool trigger, float frequency, float prosody_amount,
+                    float speed, float address, float formant_shift, float gain,
+                    float *output, size_t size);
+
+  void Render(bool trigger, int bank, float frequency, float prosody_amount,
+              float speed, float address, float formant_shift, float gain,
+              float *output, size_t size);
 
 private:
   float clock_phase_;
@@ -175,8 +156,6 @@ private:
   size_t remaining_frame_samples_;
 
   LPCSpeechSynthWordBank *word_bank_;
-
-  static const LPCSpeechSynth::Frame phonemes_[kLPCSpeechSynthNumPhonemes];
 
   DISALLOW_COPY_AND_ASSIGN(LPCSpeechSynthController);
 };

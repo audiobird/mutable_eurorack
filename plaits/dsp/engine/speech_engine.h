@@ -81,8 +81,8 @@ public:
 
   void Init();
   void Reset();
-  void Render(const Params &parameters, float *out, float *aux, size_t size,
-              bool *already_enveloped);
+  void RenderNoBank(const Params &parameters, float *out, size_t size);
+  void Render(const Params &parameters, float *out, size_t size);
 
 private:
   LPCSpeechSynthWordBank lpc_speech_synth_word_bank_;

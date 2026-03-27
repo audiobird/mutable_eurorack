@@ -48,12 +48,8 @@ void NaiveSpeechEngine::Init() {
 
 void SamSpeechEngine::Init() {
   sam_speech_synth_.Init();
-  lpc_speech_synth_word_bank_.Init(
-      word_banks_,
-      // for now, we wont use the last word bank, because for whatever reason it
-      // crashes. that's okay though, because the words are kinda lame
-      // TODO: remove bank, or replace with better words, fix crash
-      LPC_SPEECH_SYNTH_NUM_WORD_BANKS - 1);
+  lpc_speech_synth_word_bank_.Init(word_banks_,
+                                   LPC_SPEECH_SYNTH_NUM_WORD_BANKS);
   lpc_speech_synth_controller_.Init(&lpc_speech_synth_word_bank_);
 }
 
@@ -85,9 +81,9 @@ void SamSpeechEngine::Render(const EngineParameters &parameters, float *out,
                              float *aux, size_t size) {
   const float f0 = NoteToInc(parameters.note);
 
-  lpc_speech_synth_controller_.Render(false, parameters.trigger, -1, f0, 0.0f,
-                                      0.0f, parameters.morph, parameters.timbre,
-                                      1.0f, aux, out, size);
+  lpc_speech_synth_controller_.Render(parameters.trigger, f0, 0.0f, 0.0f,
+                                      parameters.morph, parameters.timbre, 1.0f,
+                                      parameters.accent, out, size);
 
   sam_speech_synth_.Render(parameters.trigger, f0, parameters.morph,
                            parameters.timbre, temp_buffer_[0].data(),
@@ -102,20 +98,24 @@ void SamSpeechEngine::Render(const EngineParameters &parameters, float *out,
   }
 }
 
-void LPCSpeechEngine::Render(const Params &parameters, float *out, float *aux,
-                             size_t size, bool *already_enveloped) {
+void LPCSpeechEngine::RenderNoBank(const Params &parameters, float *out,
+                                   size_t size) {
   const float f0 = NoteToInc(parameters.note);
 
-  const int word_bank = parameters.bank - 1;
+  lpc_speech_synth_controller_.RenderNoBank(
+      parameters.trigger, f0, parameters.prosody, parameters.speed,
+      parameters.morph, parameters.timbre, .998f, out, size);
+}
 
-  const bool replay_prosody = word_bank >= 0;
+void LPCSpeechEngine::Render(const Params &parameters, float *out,
+                             size_t size) {
+  const float f0 = NoteToInc(parameters.note);
 
-  *already_enveloped = replay_prosody;
+  const int word_bank = parameters.bank;
 
   lpc_speech_synth_controller_.Render(
-      false, parameters.trigger, word_bank, f0, parameters.prosody,
-      parameters.speed, parameters.morph, parameters.timbre,
-      replay_prosody ? parameters.accent : 1.0f, aux, out, size);
+      parameters.trigger, word_bank, f0, parameters.prosody, parameters.speed,
+      parameters.morph, parameters.timbre, parameters.accent, out, size);
 }
 
 } // namespace plaits
