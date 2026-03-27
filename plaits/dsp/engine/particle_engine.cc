@@ -39,7 +39,7 @@ void ParticleEngine::Init() { diffuser_.Init(); }
 void ParticleEngine::Reset() { diffuser_.Reset(); }
 
 void ParticleEngine::Render(const EngineParameters &parameters, float *out,
-                            float *aux, size_t size) {
+                            size_t size) {
   const float f0 = NoteToInc(parameters.note);
   const float density_sqrt =
       NoteToInc(60.0f + parameters.timbre * parameters.timbre * 72.0f);
@@ -54,11 +54,8 @@ void ParticleEngine::Render(const EngineParameters &parameters, float *out,
   const float diffusion = parameters.morph < 0.5f ? raw_diffusion : 0.0f;
   const bool sync = parameters.trigger & TRIGGER_RISING_EDGE;
 
-  std::fill(&out[0], &out[size], 0.0f);
-  std::fill(&aux[0], &aux[size], 0.0f);
-
   for (int i = 0; i < kNumParticles; ++i) {
-    particle_[i].Render(sync, density, gain, f0, spread, q, out, aux, size);
+    particle_[i].Render(sync, density, gain, f0, spread, q, out, size);
   }
 
   post_filter_.set_f_q<FREQUENCY_DIRTY>(std::min(f0, 0.49f), 0.5f);
