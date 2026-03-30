@@ -41,13 +41,11 @@ class ParticleEngine {
 public:
   void Init();
   void Reset();
-  void LoadUserData(const uint8_t *user_data) {}
-  void Render(const EngineParameters &parameters, float *out, float *aux,
-              size_t size);
+  void Render(const EngineParameters &parameters, float *out, size_t size);
 
 private:
-  std::array<Particle, kNumParticles> particle_{};
   Diffuser diffuser_{};
+  std::array<Particle, kNumParticles> particle_{};
   stmlib::Svf post_filter_{};
 };
 

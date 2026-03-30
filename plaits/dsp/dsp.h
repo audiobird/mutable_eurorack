@@ -47,8 +47,7 @@ inline constexpr float kSampleRate = SAMPLE_RATE;
 inline constexpr float kCorrectedSampleRate = SAMPLE_RATE;
 inline constexpr float a0 = (440.0f / 8.0f) / kCorrectedSampleRate;
 
-inline constexpr size_t kMaxBlockSize = 24;
-inline constexpr size_t kBlockSize = 12;
+inline constexpr size_t kMaxBlockSize = BLOCK_SIZE;
 
 } // namespace plaits
 

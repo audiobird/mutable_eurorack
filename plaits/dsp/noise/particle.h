@@ -39,8 +39,7 @@ namespace plaits {
 class Particle {
 public:
   inline void Render(bool sync, float density, float gain, float frequency,
-                     float spread, float q, float *out, float *aux,
-                     size_t size) {
+                     float spread, float q, float *out, size_t size) {
     float u = ToySynth::Random::get<float, ToySynth::Random::Unipolar>();
     if (sync) {
       u = density;
@@ -61,7 +60,6 @@ public:
           can_radomize_frequency = false;
         }
       }
-      *aux++ += s;
       *out++ += filter_.Process<stmlib::FILTER_MODE_BAND_PASS>(pre_gain_ * s);
       u = ToySynth::Random::get<float, ToySynth::Random::Unipolar>();
     }
