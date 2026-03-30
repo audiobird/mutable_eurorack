@@ -52,6 +52,13 @@ void FMVoice::LoadPatch(const fm::Patch *patch) {
   lfo_.Set(patch->modulations);
 }
 
+void SixOpEngine::Init() {
+  algorithms_.Init();
+  for (int i = 0; i < kNumSixOpVoices; ++i) {
+    voice_[i].Init(&algorithms_);
+  }
+}
+
 using PatchBank = std::array<fm::Patch, kNumPatchesPerBank>;
 using Banks = std::array<PatchBank, 3>;
 
@@ -64,15 +71,6 @@ static constexpr Banks bank = []() {
   }
   return out;
 }();
-
-void SixOpEngine::Init() {
-  algorithms_.Init();
-  for (int i = 0; i < kNumSixOpVoices; ++i) {
-    voice_[i].Init(&algorithms_);
-  }
-  voice_[0].LoadPatch(&bank[0][0]);
-  voice_[1].LoadPatch(&bank[0][0]);
-}
 
 void SixOpEngine::Render(const EngineParameters &parameters,
                          ToySynth::Synth::Bus &bus) {

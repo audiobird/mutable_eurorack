@@ -64,11 +64,10 @@ public:
   }
 
 private:
-  const fm::Patch *patch_{};
-
-  fm::Lfo lfo_{};
   fm::Voice<6> voice_;
+  fm::Lfo lfo_{};
   fm::Voice<6>::Parameters parameters_{};
+  const fm::Patch *patch_{};
 };
 
 class SixOpEngine {
@@ -80,7 +79,6 @@ public:
   void LoadBank(int bank);
 
 private:
-  // TODO: unpack all dx7 patches at compile time
   fm::Algorithms<6> algorithms_;
   // std::array<fm::Patch, kNumPatchesPerBank> patches_{};
   std::array<FMVoice, kNumSixOpVoices> voice_{};
