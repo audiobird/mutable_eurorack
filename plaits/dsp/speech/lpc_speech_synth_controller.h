@@ -29,52 +29,14 @@
 #ifndef PLAITS_DSP_SPEECH_LPC_SPEECH_SYNTH_CONTROLLER_H_
 #define PLAITS_DSP_SPEECH_LPC_SPEECH_SYNTH_CONTROLLER_H_
 
+#include "plaits/dsp/speech/lpc_speech_banks.hh"
 #include "plaits/dsp/speech/lpc_speech_synth.h"
 
 #include "stmlib/utils/buffer_allocator.h"
 #include <array>
+#include <span>
 
 namespace plaits {
-
-class BitStream {
-public:
-  constexpr void Init(const uint8_t *p) { p_ = p; }
-
-  constexpr void Flush() {
-    while (available_) {
-      GetBits(1);
-    }
-  }
-
-  constexpr uint8_t GetBits(int num_bits) {
-    int shift = num_bits;
-    if (num_bits > available_) {
-      bits_ <<= available_;
-      shift -= available_;
-      bits_ |= Reverse(*p_++);
-      available_ += 8;
-    }
-    bits_ <<= shift;
-    uint8_t result = bits_ >> 8;
-    bits_ &= 0xff;
-    available_ -= num_bits;
-    return result;
-  }
-
-  constexpr const uint8_t *ptr() const { return p_; }
-
-private:
-  constexpr uint8_t Reverse(uint8_t b) const {
-    b = (b >> 4) | (b << 4);
-    b = ((b & 0xcc) >> 2) | ((b & 0x33) << 2);
-    b = ((b & 0xaa) >> 1) | ((b & 0x55) << 1);
-    return b;
-  }
-
-  const uint8_t *p_;
-  int available_{};
-  uint16_t bits_{};
-};
 
 inline constexpr int kLPCSpeechSynthMaxWords = 32;
 inline constexpr int kLPCSpeechSynthMaxFrames = 1024;
@@ -84,57 +46,9 @@ inline constexpr int kLPCSpeechSynthNumPhonemes =
     kLPCSpeechSynthNumVowels + kLPCSpeechSynthNumConsonants;
 inline constexpr float kLPCSpeechSynthFPS = 40.0f;
 
-struct LPCSpeechSynthWordBankData {
-  const uint8_t *data;
-  size_t size;
-};
-
-class LPCSpeechSynthWordBank {
-public:
-  LPCSpeechSynthWordBank() {}
-  ~LPCSpeechSynthWordBank() {}
-
-  void Init(const LPCSpeechSynthWordBankData *word_banks, int num_banks);
-
-  bool Load(int index);
-  void Reset();
-
-  inline int num_frames() const { return num_frames_; }
-  inline const LPCSpeechSynth::Frame *frames() const { return frames_.data(); }
-
-  inline void GetWordBoundaries(float address, int *start, int *end) {
-    if (num_words_ == 0) {
-      *start = *end = -1;
-    } else {
-      int word = static_cast<int>(address * static_cast<float>(num_words_));
-      if (word >= num_words_) {
-        word = num_words_ - 1;
-      }
-      *start = word_boundaries_[word];
-      *end = word_boundaries_[word + 1] - 1;
-    }
-  }
-
-private:
-  size_t LoadNextWord(const uint8_t *data);
-
-  const LPCSpeechSynthWordBankData *word_banks_;
-
-  int num_banks_;
-  int loaded_bank_;
-  int num_frames_;
-  int num_words_;
-
-  std::array<int, kLPCSpeechSynthMaxWords> word_boundaries_;
-  std::array<LPCSpeechSynth::Frame, kLPCSpeechSynthMaxFrames> frames_;
-};
-
 class LPCSpeechSynthController {
 public:
-  LPCSpeechSynthController() {}
-  ~LPCSpeechSynthController() {}
-
-  void Init(LPCSpeechSynthWordBank *word_bank);
+  void Init();
 
   void RenderNoBank(bool trigger, float frequency, float prosody_amount,
                     float speed, float address, float formant_shift, float gain,
@@ -145,19 +59,16 @@ public:
               float *output, size_t size);
 
 private:
-  float clock_phase_;
-  float sample_[2];
-  float next_sample_[2];
-  float gain_;
+  float clock_phase_{};
+  std::array<float, 2> sample_{};
+  std::array<float, 2> next_sample_{};
+  float gain_{};
   LPCSpeechSynth synth_;
 
-  int playback_frame_;
-  int last_playback_frame_;
-  size_t remaining_frame_samples_;
-
-  LPCSpeechSynthWordBank *word_bank_;
-
-  DISALLOW_COPY_AND_ASSIGN(LPCSpeechSynthController);
+  std::span<const LPCSpeechSynth::Frame> cur_word{plaits::bank[0][0]};
+  int playback_frame_{-1};
+  int last_playback_frame_{-1};
+  size_t remaining_frame_samples_{};
 };
 
 }; // namespace plaits

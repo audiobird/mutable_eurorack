@@ -29,10 +29,9 @@
 #ifndef PLAITS_DSP_SPEECH_LPC_SPEECH_SYNTH_WORDS_H_
 #define PLAITS_DSP_SPEECH_LPC_SPEECH_SYNTH_WORDS_H_
 
-#include "plaits/dsp/speech/lpc_speech_synth_controller.h"
 #include <array>
+#include <cstdint>
 #include <span>
-#include <vector>
 
 #define LPC_SPEECH_SYNTH_NUM_WORD_BANKS 5
 
@@ -165,13 +164,6 @@ inline constexpr uint8_t violet[] = {
     0x6c, 0x1a, 0xa2, 0x57, 0xb5, 0x98, 0xa2, 0xa6, 0x51, 0xcd, 0xc3, 0x35,
     0xac, 0x08, 0x20, 0x11, 0x4d, 0x06, 0x34, 0x2e, 0xc6, 0x80, 0x2c, 0xdc,
     0x08, 0x90, 0x94, 0x39, 0x00, 0xc0, 0xff,
-};
-
-inline constexpr auto color = std::array{
-    std::span<const uint8_t>{red},    std::span<const uint8_t>{orange},
-    std::span<const uint8_t>{yellow}, std::span<const uint8_t>{green},
-    std::span<const uint8_t>{blue},   std::span<const uint8_t>{indigo},
-    std::span<const uint8_t>{violet},
 };
 
 } // namespace Colors
@@ -523,22 +515,6 @@ inline constexpr uint8_t z[] = {
     0x9d, 0xeb, 0x92, 0xd6, 0x15, 0x12, 0xa0, 0x6b, 0x75, 0x5e, 0xe1, 0xff,
 };
 
-inline constexpr auto alphabet = std::array{
-    std::span<const uint8_t>{a}, std::span<const uint8_t>{b},
-    std::span<const uint8_t>{c}, std::span<const uint8_t>{d},
-    std::span<const uint8_t>{e}, std::span<const uint8_t>{f},
-    std::span<const uint8_t>{g}, std::span<const uint8_t>{h},
-    std::span<const uint8_t>{i}, std::span<const uint8_t>{j},
-    std::span<const uint8_t>{k}, std::span<const uint8_t>{l},
-    std::span<const uint8_t>{m}, std::span<const uint8_t>{n},
-    std::span<const uint8_t>{o}, std::span<const uint8_t>{p},
-    std::span<const uint8_t>{q}, std::span<const uint8_t>{r},
-    std::span<const uint8_t>{s}, std::span<const uint8_t>{t},
-    std::span<const uint8_t>{u}, std::span<const uint8_t>{v},
-    std::span<const uint8_t>{w}, std::span<const uint8_t>{x},
-    std::span<const uint8_t>{y}, std::span<const uint8_t>{j},
-};
-
 } // namespace Alphabet
 
 namespace Nato {
@@ -840,22 +816,6 @@ inline constexpr uint8_t z[] = {
     0xb8, 0xbb, 0x07, 0xf6, 0x5b, 0x6d, 0x91, 0x6e, 0xa9, 0xf2, 0x65, 0xf4,
     0xc9, 0x98, 0x97, 0x69, 0x9f, 0x3a, 0xe7, 0x2d, 0x6c, 0xc1, 0x9a, 0x8f,
     0xca, 0xde, 0x70, 0x04, 0x9d, 0xee, 0xc9, 0x79, 0xe2, 0xe1, 0x1f, 0xf8,
-};
-
-inline constexpr auto nato = std::array{
-    std::span<const uint8_t>{a}, std::span<const uint8_t>{b},
-    std::span<const uint8_t>{c}, std::span<const uint8_t>{d},
-    std::span<const uint8_t>{e}, std::span<const uint8_t>{f},
-    std::span<const uint8_t>{g}, std::span<const uint8_t>{h},
-    std::span<const uint8_t>{i}, std::span<const uint8_t>{j},
-    std::span<const uint8_t>{k}, std::span<const uint8_t>{l},
-    std::span<const uint8_t>{m}, std::span<const uint8_t>{n},
-    std::span<const uint8_t>{o}, std::span<const uint8_t>{p},
-    std::span<const uint8_t>{q}, std::span<const uint8_t>{r},
-    std::span<const uint8_t>{s}, std::span<const uint8_t>{t},
-    std::span<const uint8_t>{u}, std::span<const uint8_t>{v},
-    std::span<const uint8_t>{w}, std::span<const uint8_t>{x},
-    std::span<const uint8_t>{y}, std::span<const uint8_t>{j},
 };
 
 } // namespace Nato

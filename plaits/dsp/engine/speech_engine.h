@@ -59,7 +59,6 @@ public:
               size_t size);
 
 private:
-  LPCSpeechSynthWordBank lpc_speech_synth_word_bank_;
   std::array<std::array<float, kMaxBlockSize>, 2> temp_buffer_;
   LPCSpeechSynthController lpc_speech_synth_controller_;
   SAMSpeechSynth sam_speech_synth_;
@@ -85,7 +84,6 @@ public:
   void Render(const Params &parameters, float *out, size_t size);
 
 private:
-  LPCSpeechSynthWordBank lpc_speech_synth_word_bank_;
   LPCSpeechSynthController lpc_speech_synth_controller_;
 };
 

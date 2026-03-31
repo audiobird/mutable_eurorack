@@ -35,11 +35,7 @@ namespace plaits {
 using namespace std;
 using namespace stmlib;
 
-void LPCSpeechEngine::Init() {
-  lpc_speech_synth_word_bank_.Init(word_banks_,
-                                   LPC_SPEECH_SYNTH_NUM_WORD_BANKS);
-  lpc_speech_synth_controller_.Init(&lpc_speech_synth_word_bank_);
-}
+void LPCSpeechEngine::Init() { lpc_speech_synth_controller_.Init(); }
 
 void NaiveSpeechEngine::Init() {
   sam_speech_synth_.Init();
@@ -48,12 +44,10 @@ void NaiveSpeechEngine::Init() {
 
 void SamSpeechEngine::Init() {
   sam_speech_synth_.Init();
-  lpc_speech_synth_word_bank_.Init(word_banks_,
-                                   LPC_SPEECH_SYNTH_NUM_WORD_BANKS);
-  lpc_speech_synth_controller_.Init(&lpc_speech_synth_word_bank_);
+  lpc_speech_synth_controller_.Init();
 }
 
-void LPCSpeechEngine::Reset() { lpc_speech_synth_word_bank_.Reset(); }
+void LPCSpeechEngine::Reset() {}
 
 void NaiveSpeechEngine::Render(const EngineParameters &parameters, float *out,
                                float *aux, size_t size) {
