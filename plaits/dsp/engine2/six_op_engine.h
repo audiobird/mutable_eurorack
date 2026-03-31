@@ -30,7 +30,6 @@
 #define PLAITS_DSP_ENGINE_SIX_OP_ENGINE_H_
 
 #include "plaits/dsp/dsp.h"
-#include "stmlib/dsp/hysteresis_quantizer.h"
 
 #include "plaits/dsp/engine/engine.h"
 #include "plaits/dsp/fm/algorithms.h"
