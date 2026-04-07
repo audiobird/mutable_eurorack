@@ -29,6 +29,7 @@
 #ifndef PLAITS_DSP_CHORDS_CHORD_BANK_H_
 #define PLAITS_DSP_CHORDS_CHORD_BANK_H_
 
+#include <string_view>
 namespace plaits {
 
 const int kChordNumNotes = 4;
@@ -49,6 +50,8 @@ public:
   float ratio(int note) const { return ratios()[note]; }
 
   int num_notes() const;
+
+  static std::string_view chord_name(int idx);
 
 private:
   int chord_idx_{};

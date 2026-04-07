@@ -27,17 +27,19 @@
 // Chords: wavetable and divide-down organ/string machine.
 
 #include "plaits/dsp/chords/chord_bank.h"
-
-#include "stmlib/dsp/units.h"
+#include "stmlib/dsp/dsp.h"
+#include <array>
+#include <cmath>
 #include <initializer_list>
+#include <ranges>
+#include <string_view>
 
 namespace plaits {
 
-using namespace stmlib;
-
 struct ChordRatio {
-  constexpr ChordRatio(std::initializer_list<float> interval, int count)
-      : count{count} {
+  constexpr ChordRatio(std::initializer_list<float> interval, int count,
+                       std::string_view name)
+      : count{count}, name{name} {
     for (auto [i, r] : std::ranges::zip_view(interval, ratio)) {
       r = std::pow(2, i / 12.f);
     }
@@ -45,31 +47,34 @@ struct ChordRatio {
 
   std::array<float, 4> ratio{};
   int count{};
+  std::string_view name{};
 };
 
 static constexpr std::array<ChordRatio, kChordNumChords> chords_ = {
     // Fixed Intervals
-    ChordRatio{{0.00f, 0.01f, 11.99f, 12.00f}, 1}, // Octave
-    ChordRatio{{0.00f, 7.00f, 7.01f, 12.00f}, 2},  // Fifth
+    ChordRatio{{0.00f, 0.01f, 11.99f, 12.00f}, 1, "Octave"},
+    ChordRatio{{0.00f, 7.00f, 7.01f, 12.00f}, 2, "Fifth"},
     // Minor
-    ChordRatio{{0.00f, 3.00f, 7.00f, 12.00f}, 3},  // Minor
-    ChordRatio{{0.00f, 3.00f, 7.00f, 10.00f}, 4},  // Minor 7th
-    ChordRatio{{0.00f, 3.00f, 10.00f, 14.00f}, 4}, // Minor 9th
-    ChordRatio{{0.00f, 3.00f, 10.00f, 17.00f}, 4}, // Minor 11th
+    ChordRatio{{0.00f, 3.00f, 7.00f, 12.00f}, 3, "Minor"},
+    ChordRatio{{0.00f, 3.00f, 7.00f, 10.00f}, 4, "Minor 7"},
+    ChordRatio{{0.00f, 3.00f, 10.00f, 14.00f}, 4, "Minor 9"},
+    ChordRatio{{0.00f, 3.00f, 10.00f, 17.00f}, 4, "Minor 11"},
     // Major
-    ChordRatio{{0.00f, 4.00f, 7.00f, 12.00f}, 3},  // Major
-    ChordRatio{{0.00f, 4.00f, 7.00f, 11.00f}, 4},  // Major 7th
-    ChordRatio{{0.00f, 4.00f, 11.00f, 14.00f}, 4}, // Major 9th
+    ChordRatio{{0.00f, 4.00f, 7.00f, 12.00f}, 3, "Major"},
+    ChordRatio{{0.00f, 4.00f, 7.00f, 11.00f}, 4, "Major 7"},
+    ChordRatio{{0.00f, 4.00f, 11.00f, 14.00f}, 4, "Major 9"},
     // Colour Chords
-    ChordRatio{{0.00f, 5.00f, 7.00f, 12.00f}, 3},  // Sus4
-    ChordRatio{{0.00f, 2.00f, 9.00f, 16.00f}, 4},  // 69
-    ChordRatio{{0.00f, 4.00f, 7.00f, 9.00f}, 4},   // 6th
-    ChordRatio{{0.00f, 7.00f, 16.00f, 23.00f}, 4}, // 10th (Spread maj7)
-    ChordRatio{{0.00f, 4.00f, 7.00f, 10.00f}, 4},  // Dominant 7th
-    ChordRatio{{0.00f, 7.00f, 10.00f, 13.00f}, 4}, // Dominant 7th (b9)
-    ChordRatio{{0.00f, 3.00f, 6.00f, 10.00f}, 4},  // Half Diminished
-    ChordRatio{{0.00f, 3.00f, 6.00f, 9.00f}, 4},   // Fully Diminished
+    ChordRatio{{0.00f, 5.00f, 7.00f, 12.00f}, 3, "Sus4"},
+    ChordRatio{{0.00f, 2.00f, 9.00f, 16.00f}, 4, "6/9"},
+    ChordRatio{{0.00f, 4.00f, 7.00f, 9.00f}, 4, "6th"},
+    ChordRatio{{0.00f, 7.00f, 16.00f, 23.00f}, 4, "Major 10"},
+    ChordRatio{{0.00f, 4.00f, 7.00f, 10.00f}, 4, "Dom 7"},
+    ChordRatio{{0.00f, 7.00f, 10.00f, 13.00f}, 4, "Dom 7b9"},
+    ChordRatio{{0.00f, 3.00f, 6.00f, 10.00f}, 4, "Half Dim"},
+    ChordRatio{{0.00f, 3.00f, 6.00f, 9.00f}, 4, "Full Dim"},
 };
+
+std::string_view ChordBank::chord_name(int idx) { return chords_[idx].name; }
 
 const float *ChordBank::ratios() const {
   return chords_[chord_idx_].ratio.data();
